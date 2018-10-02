@@ -1,0 +1,96 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{bm}
+
+\begin{document}
+
+\begin{center}
+{\Large CS221 Fall 2018 Homework 1}
+
+\begin{tabular}{rl}
+SUNet ID: & 05794739 \\
+Name: & Luis Perez \\
+Collaborators: &
+\end{tabular}
+\end{center}
+
+By turning in this assignment, I agree by the Stanford honor code and declare
+that all of this is my own work.
+
+\section*{Problem 1}
+
+\begin{enumerate}[label=(\alph*)]
+  \item The problem asks us to find the value of $\theta$ that minimizes the function:
+  $$
+    f(\theta) = \frac{1}{2}\sum_{i=1}^n w_i(\theta - x_i)^2
+  $$
+  We can compute the above by simply taking the derivate of the function with respect to $\theta$ and solving for $\theta$ when equal to 0.
+  \begin{align*}
+    \frac{df}{d\theta} &= \sum_{i=1}^n w_i(\theta - x_i) \tag{using product rule $(uv)' = u'v + uv'$}\\ 
+    &= 0 
+    \implies \theta = \frac{\sum_{i=1}^n w_ix_i}{\sum_{i=1}^n w_i}
+  \end{align*}
+  We note that $\frac{d^2f}{d\theta^2} = \sum_{i=1}^n w_i$, so the above solution is a minimum if and only if $\sum_{i=1} w_i > 0$. This is guaranteed if $w_i > 0, \forall i$. However, if we have some $w_i < 0$, then we could run into an issue where the function does not have a minimum.
+
+  \item We can show what we want rather directly. In particular, we will show that $f(\bm{x}) \geq g(\bm{x})$.
+  \begin{align*}
+    f(\bm{x}) &= \sum_{i=1}^d \max_{s \in \{1,-1\}} sx_i \tag{definition of $f$} \\
+    &= \max_{\bm{s} \in \{1,-1\}^d} \bm{s}^T\bm{x} \tag{definition of dot product} \\
+    &\geq \max_{\bm{s} \in \{[1]^d , [-1]^d\}} \bm{s}^T\bm{x} \tag{$\bm{s}$ can take on fewer values now} \\
+    &= \max_{s \in \{1, -1\}} \sum_{i=1}^d sx_i \tag{definition of dot product} \\
+    &= g(\bm{x})
+  \end{align*}
+
+  \item  TODO
+  
+  \item As the hint indicates, we can calculate the value of $p$ that maximizes $L(p)$ by taking the derivate of $\log L(p)$ and setting it to zero (further nothing that $L(p)$ is concave, and therefore the critical point is a maximum).
+  \begin{align*}
+    \frac{d}{dp}\log L(p) &= \frac{d}{dp}\left[4\log p + 3 \log (1-p)\right] \\
+    &= \frac{4}{p} - \frac{3}{1-p} \\
+    &= 0 \\
+    \implies 4 - 4p &= 3p \\
+    \implies p = \frac{4}{7} 
+  \end{align*}
+  The intuitive interpretation of this value of $p$ is that this is the probability of the coin which we used of landing heads. Given the data, it appears to be slightly biased in favor of heads.
+
+  \item We're given the function $f(\bm{w}) = \sum_{i=1}^n \sum_{j = 1}^n (\bm{a}_i^T\bm{w} - \bm{b}_j^T\bm{w})^2 + \lambda||w||$ and we wish to compute $\nabla f(\bm{w})$. We can do it by parts, first.
+  \begin{align*}
+    \frac{\partial}{\partial w_k} ||\bm{w}||_2^2 &= \frac{\partial}{\partial w_k} \sum_{k=1}^d w_k^2 \\
+    &= 2w_k \tag{ all terms except $w_k$ are zero}
+  \end{align*}
+  We therefore have $\nabla \lambda ||\bm{w}||_2^2 = 2\lambda\bm{w}$. Continuing:
+  \begin{align*}
+    \frac{\partial}{\partial w_k}\left[ \sum_{i=1}^n \sum_{j=1}^n (\bm{a}_i^T \bm{w} - \bm{b}_j^T \bm{w})^2 \right] &= \sum_{i=1}^n \sum_{j=1}^n \frac{\partial}{\partial w_k} \left[ \bm{a}_i^T \bm{w} - \bm{b}_j^T \bm{w} \right]^2 \\
+    &=  2\sum_{i=1}^n \sum_{j=1}^n (\bm{a}_i^T \bm{w} - \bm{b}_j^T\bm{w})\frac{\partial}{\partial w_k}[\bm{a}_i^T \bm{w} - \bm{b}_j^T \bm {w}] \tag{chain rule} \\
+    &= 2 \sum_{i=1}^n \sum_{j=1}^n(\bm{a}_i^T \bm{w} - \bm{b}_j^T \bm{w}) [\bm{a}_i - \bm{b}_j]_k
+  \end{align*}
+  We therefore have the result that:
+  $$
+    \nabla f(\bm{w}) = 2\sum_{i=1}^n\sum_{j=1}^n (\bm{a}_i^T \bm{w} - \bm{b}_j^T w)[\bm{a}_i - \bm{b}_i] + 2\lambda \bm{w}
+  $$
+\end{enumerate}
+
+\section*{Problem 2}
+
+\begin{enumerate}[label=(\alph*)]
+  \item We first note that there are a total of ${n^2 \choose 2} = O(n^4)$ locations to place a rectangle in an $n \times n$ grid (think about it as if you're choosing the top-left and bottom-right corners, which will fully determine an axis-aligned rectangle). To fully determine a face, we need to place 2 (eyes) + 2 (ears) + 1 (nose) + 1 (mouth) = 6 rectangles total. To simplify things (this won't affect the final answer), we assume that the same rectangle can use used for multiple face parts. We therefore have a total of $O(n^4)\times O(n^4) \times O(n^4) \times O(n^4) \times O(n^4) \times O(n^4)  = O(n^24)$ choices of 6 rectangles each choise defining one face for a total of $O(n^24)$ possible faces.\footnote{Technically, we're double counting the eyes and the ears here -- however, note that this will add at most a constant factor of 4, so it does not affect the big-O solution.}
+
+  \item This is essentially a DP problem. First, define $T(i,j)$ to be the minimum cost for reaching the lower-right corner $(n,n)$ given that we're currently at position $(i,j)$ for $1 \leq i, j\leq n$. We can define this recursively as follows:
+  \begin{align*}
+    T(n,n) &= c(n,n) \\
+    T(i,n) &= c(i,n) + T(i + 1, n) \\
+    T(n,j) &= c(n,j) + T(n, j + 1) \\ 
+    T(i,j) &= c(i,j) + \min\{ T(i, j+1), T(i+1, j) \} \\
+  \end{align*}
+  To answer the question asked in the problem statement, we would simply need to return $T(1,1)$. We can memoize intermediate results and thereby achieve a running time of $O(n^2)$ -- $n^2$ possible inputs, each taking contant time to compute -- with space complexity of $O(n^2)$. We can further minimize the space-complexity to be O(n) if we do an iterative matrix-filling approach in an intelligent way, but this is not required for this problem.
+
+  \item We can compute this rather directly by thinking of the problem slightly differently. Basically, there are $n$ steps. Each ``way'' to reach the top can be encoded uniquely by a binary string of length $n-1$ indicating whether or not we step on the $i$-th step or not on our way to the $n$-th step. For the example give, when $n = 4$ we have $000, 001, 010, 100, 011, 101, 110, 111$ which respectively encode (1) step on 4, (2) take two steps and step on (a) 3,4, (b) 2,4, (c) 1,4, (3) take three steps and step on (a) 2,3,4, (b) 1,3,4, (c) 1,2,4, and (4) take four steps by stepping on all the steps.
+
+  As such, the total number of ways is simply $2^{\max\{0, n-1\}}$, where we take $\max\{0, n-1\}$ to handle the $n = 0$ case nicely.
+\end{enumerate}
+
+\end{document}
