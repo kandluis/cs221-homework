@@ -76,12 +76,12 @@ that all of this is my own work.
   \end{align*}
   The intuitive interpretation of this value of $p$ is that this is the probability of the coin which we used of landing heads. Given the data, it appears to be slightly biased in favor of heads.
 
-  \item We're given the function $f(\bm{w}) = \sum_{i=1}^n \sum_{j = 1}^n (\bm{a}_i^T\bm{w} - \bm{b}_j^T\bm{w})^2 + \lambda||w||$ and we wish to compute $\nabla f(\bm{w})$. We can do it by parts, first.
+  \item We're given the function $f(\bm{w}) = \sum_{i=1}^n \sum_{j = 1}^n (\bm{a}_i^T\bm{w} - \bm{b}_j^T\bm{w})^2 + \lambda||w||_2^2$ and we wish to compute $\nabla f(\bm{w})$. We can do it by parts, first.
   \begin{align*}
     \frac{\partial}{\partial w_k} ||\bm{w}||_2^2 &= \frac{\partial}{\partial w_k} \sum_{k=1}^d w_k^2 \\
     &= 2w_k \tag{ all terms except $w_k$ are zero}
   \end{align*}
-  We therefore have $\nabla \lambda ||\bm{w}||_2^2 = 2\lambda\bm{w}$. Continuing:
+  We therefore have $\nabla \lambda ||\bm{w}||_2^2 = 2\lambda\bm{w}^T$. Continuing:
   \begin{align*}
     \frac{\partial}{\partial w_k}\left[ \sum_{i=1}^n \sum_{j=1}^n (\bm{a}_i^T \bm{w} - \bm{b}_j^T \bm{w})^2 \right] &= \sum_{i=1}^n \sum_{j=1}^n \frac{\partial}{\partial w_k} \left[ \bm{a}_i^T \bm{w} - \bm{b}_j^T \bm{w} \right]^2 \\
     &=  2\sum_{i=1}^n \sum_{j=1}^n (\bm{a}_i^T \bm{w} - \bm{b}_j^T\bm{w})\frac{\partial}{\partial w_k}[\bm{a}_i^T \bm{w} - \bm{b}_j^T \bm {w}] \tag{chain rule} \\
@@ -90,14 +90,14 @@ that all of this is my own work.
   We therefore have the result that:
   \begin{align*}
     \nabla f(\bm{w}) &= 2\sum_{i=1}^n\sum_{j=1}^n (\bm{a}_i^T \bm{w} - \bm{b}_j^T \bm{w})[\bm{a}_i - \bm{b}_j]^T + 2\lambda \bm{w}^T \\
-    &= 2w^T\left[\sum_{i=1}^n\sum_{j=1}^n (\bm{a}_i - \bm{b}_j)(\bm{a}_i - \bm{b}_j)^T\right] + 2\lambda \bm{w}^T 
+    &= 2\bm{w}^T\left[\sum_{i=1}^n\sum_{j=1}^n (\bm{a}_i - \bm{b}_j)(\bm{a}_i - \bm{b}_j)^T\right] + 2\lambda \bm{w}^T 
   \end{align*}
 \end{enumerate}
 
 \section*{Problem 2}
 
 \begin{enumerate}[label=(\alph*)]
-  \item We first note that there are a total of ${n^2 \choose 2} = O(n^4)$ locations to place a rectangle in an $n \times n$ grid (think about it as if you're choosing the top-left and bottom-right corners, which will fully determine an axis-aligned rectangle). To fully determine a face, we need to place 2 (eyes) + 2 (ears) + 1 (nose) + 1 (mouth) = 6 rectangles total. To simplify things (this won't affect the final answer), we assume that the same rectangle can use used for multiple face parts. We therefore have a total of $O(n^4)\times O(n^4) \times O(n^4) \times O(n^4) \times O(n^4) \times O(n^4)  = O(n^24)$ choices of 6 rectangles each choise defining one face for a total of $O(n^24)$ possible faces.\footnote{Technically, we're double counting the eyes and the ears here -- however, note that this will add at most a constant factor of 4, so it does not affect the big-O solution.}
+  \item We first note that there are a total of ${n^2 \choose 2} = O(n^4)$ locations to place a rectangle in an $n \times n$ grid (think about it as if you're choosing the top-left and bottom-right corners, which will fully determine an axis-aligned rectangle). To fully determine a face, we need to place 2 (eyes) + 2 (ears) + 1 (nose) + 1 (mouth) = 6 rectangles total. To simplify things (this won't affect the final answer), we assume that the same rectangle can use used for multiple face parts. We therefore have a total of $O(n^4)\times O(n^4) \times O(n^4) \times O(n^4) \times O(n^4) \times O(n^4)  = O(n^{24})$ choices of 6 rectangles each choise defining one face for a total of $O(n^{24})$ possible faces.\footnote{Technically, we're double counting the eyes and the ears here -- however, note that this will add at most a constant factor of 4, so it does not affect the big-O solution.}
 
   \item This is essentially a DP problem. First, define $T(i,j)$ to be the minimum cost for reaching the lower-right corner $(n,n)$ given that we're currently at position $(i,j)$ for $1 \leq i, j\leq n$. We can define this recursively as follows:
   \begin{align*}
