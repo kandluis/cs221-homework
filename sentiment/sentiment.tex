@@ -143,4 +143,150 @@ that all of this is my own work.
 
 \end{enumerate}
 
+\section*{Problem 3}
+
+\begin{enumerate}[label=(\alph*)]
+  \item In ``submissions.py''.
+  \item In ``submissions.py''.
+  \item In ``submissions.py''.
+  \item We look through some incorrect predictions for our system.
+  \begin{enumerate}
+    \item ``this is a superior horror flick .'' was misclassified as negative (-1) mostly because of the large negative weights associated with ``horror'' and ``flick'' despite the fact that these are mostly noun descriptors for the movie genre, rather than the opinion of the reviewer.
+    \item ``you're better off staying home and watching the x-files .'' was misclassified as positive (+1), mostly because it appears to be near the middle -- almost all of the words have low weights ($-0.15 < x <0.23$) and this barely passes as positive.
+    \item ``wickedly funny , visually engrossing , never boring , this movie challenges us to think about the ways we consume pop culture .'' was misclassified as negative (-1) almost entirely due to two words (``never'' and ``boring'') which have some of the largest negative weights, despite semantically negating (and becoming positive) in this case.
+    \item ``accuracy and realism are terrific , but if your film becomes boring , and your dialogue isn't smart , then you need to use more poetic license .'' was misclassified as positive (+1) due to its complex structure, conditionals, and sheer number of positive to neutral words which become negative only due to the negations and conditionals.
+    \item ``a solid film . . . but more conscientious than it is truly stirring .'' was misclassified as positive (+1) mostly due to its use of strongly positive words, such as ``solid'' and ``truly'' which were semantically used as a contrast rather than direct descriptors of the film.
+  \end{enumerate}
+  \item In ``submissions.py''.
+  \item We can see our exploration for different values of $n$ in Table \ref{table:n_values}. The lowest test-error given our tested values is found for $n= 7$, which appears to be a minimum with smaller values increases the test error (insufficient model capacity) and larger values also increasing the test error (overfitting on the training set, or also insufficient training data due to longer n-grams extracting fewer features).
+
+  We can explain the $n \in \{4,5,6,7\}$ nearing and surpassing our performance with the word extractor by nothing a few factors. With a such n-grams, most ``words'' will end-up being partially extracted in their entirety, thereby explaining why a match in performance with our first model is non unexpected. The improvement in performance likely stems from the fact that the n-gram can actually take into account the relationships between words. For example, ``not bad'' will have two word features (``not'' and ``bad'') which will likely both be negative (despite its positive sentiment). However, a 4-gram can capture the near-word feature (``notb'', ``tbad'') as well as the transitional feature sof ``otba'', thereby giving the model the ability to differentiate between just ``not'' (negative) and ``not bad'' (positive).
+
+  We can imagine a review such as the following:
+
+  ``not bad horror flick, never slow, truly marvelous.''
+  
+  is far more likely to be correctly classified by an n-gram model than a bag-of-words model due to the constant double negations and inter-word relations (``horror flick'') which can only be captured by considering multiple words at once. We can verify this, as our trained bag-of-words models predicts a (-1), mostly due to all the negative words, while our 5-gram model classifies it correctly.
+
+    \begin{table}[h!]
+      \centering
+      \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{}   & \textbf{train error} & \textbf{dev error} \\ \hline
+        \textbf{1}  & 0.479                & 0.492              \\ \hline
+        \textbf{2}  & 0.317                & 0.410              \\ \hline
+        \textbf{3}  & 0.002                & 0.323              \\ \hline
+        \textbf{4}  & 0.0                  & 0.281              \\ \hline
+        \textbf{5}  & 0.0                  & 0.275              \\ \hline
+        \textbf{6}  & 0.0                  & 0.275              \\ \hline
+        \textbf{7}  & 0.0                  & 0.273              \\ \hline
+        \textbf{8}  & 0.001                & 0.291              \\ \hline
+        \textbf{9}  & 0.001                & 0.308              \\ \hline
+        \textbf{10} & 0.001                & 0.333              \\ \hline
+        \textbf{15} & 0.002                & 0.45               \\ \hline
+        \textbf{19} & 0.006                & 0.49               \\ \hline
+      \end{tabular}
+      \caption{Test and Train Error with n-gram feature extractions}
+      \label{table:n_values}
+    \end{table}
+\end{enumerate}
+
+\section*{Problem 3}
+
+\begin{enumerate}[label=(\alph*)]
+  \item We run 2-means on the given dataset.
+    \begin{enumerate}
+      \item We begin the algorithm with the centroids $\mu_1 = [2,3]$ and $\mu_2 = [2,-1]$.
+      \begin{enumerate}[label=(\arabic*)]
+        \item We first compute the cluster assignments. We have:
+        \begin{align*}
+          d(\mu_1, \phi(x_1)) &= 10\\
+          d(\mu_2, \phi(x_1)) &= 2 \\
+          d(\mu_1, \phi(x_2)) &= 2 \\
+          d(\mu_2, \phi(x_2)) &= 10 \\
+          d(\mu_1, \phi(x_3)) &= 10\\
+          d(\mu_2, \phi(x_3)) &= 2 \\
+          d(\mu_1, \phi(x_4)) &= 2 \\
+          d(\mu_2, \phi(x_4)) &= 9
+        \end{align*}
+        which implies our assignemnts are:
+        \begin{align*}
+          z_1 &= 2 \\
+          z_2 &= 1 \\
+          z_3 &= 2 \\
+          z_4 &= 1
+        \end{align*}
+      \item Given the above cluster assignments, we can compute the new centroids as:
+      \begin{align*}
+        \mu_1 &= [1.5, 2] \\
+        \mu_2 &= [1.5, 0]
+      \end{align*}
+      \item We now recompute the assignments, and we have:
+      \begin{align*}
+        d(\mu_1, \phi(x_1)) &= 4.25\\
+        d(\mu_2, \phi(x_1)) &= 2.25 \\
+        d(\mu_1, \phi(x_2)) &= 0.25 \\
+        d(\mu_2, \phi(x_2)) &= 4.25 \\
+        d(\mu_1, \phi(x_3)) &= 8.25 \\
+        d(\mu_2, \phi(x_3)) &= 4.25 \\
+        d(\mu_1, \phi(x_4)) &= 0.25 \\
+        d(\mu_2, \phi(x_4)) &= 4.25
+      \end{align*}
+      which implies:
+      \begin{align*}
+        z_1 &= 2 \\
+        z_2 &= 1 \\
+        z_3 &= 2 \\
+        z_4 &= 1
+      \end{align*}
+      The assignments are unchaged. As such, we can stop the algorithm with the above assignments and centroids.
+    \end{enumerate}
+    \item We now do another iteration with the initialize centroids as $\mu_1 = [0,1]$ and $\mu_2 = [3,2]$.
+    \begin{enumerate}
+      \item We first compute the assignments:
+        \begin{align*}
+          d(\mu_1, \phi(x_1)) &= 2 \\
+          d(\mu_2, \phi(x_1)) &= 8 \\
+          d(\mu_1, \phi(x_2)) &= 2 \\
+          d(\mu_2, \phi(x_2)) &= 4 \\
+          d(\mu_1, \phi(x_3)) &= 10 \\
+          d(\mu_2, \phi(x_3)) &= 4 \\
+          d(\mu_1, \phi(x_4)) &= 5 \\
+          d(\mu_2, \phi(x_4)) &= 1
+        \end{align*}
+        which implies our assignemnts are:
+        \begin{align*}
+          z_1 &= 1 \\
+          z_2 &= 1 \\
+          z_3 &= 2 \\
+          z_4 &= 2
+        \end{align*}
+      \item Given the above cluster assignments, we can compute the new centroids as:
+        \begin{align*}
+          \mu_1 &= [1, 1] \\
+          \mu_2 &= [2.5, 1]
+        \end{align*}
+      \item We now recompute the assignments, and we have:
+        \begin{align*}
+          d(\mu_1, \phi(x_1)) &= 1 \\
+          d(\mu_2, \phi(x_1)) &= 3.25 \\
+          d(\mu_1, \phi(x_2)) &= 1 \\
+          d(\mu_2, \phi(x_2)) &= 3.25 \\
+          d(\mu_1, \phi(x_3)) &= 5 \\
+          d(\mu_2, \phi(x_3)) &= 1.25 \\
+          d(\mu_1, \phi(x_4)) &= 2 \\
+          d(\mu_2, \phi(x_4)) &= 1.25
+        \end{align*}
+        which implies:
+        \begin{align*}
+          z_1 &= 1 \\
+          z_2 &= 1 \\
+          z_3 &= 2 \\
+          z_4 &= 2
+        \end{align*}
+         The assignments are unchaged. As such, we can stop the algorithm with the above assignments and centroids.
+      \end{enumerate}
+    \end{enumerate}
+  \end{enumerate}
+
 \end{document}
