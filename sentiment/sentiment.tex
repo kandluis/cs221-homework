@@ -196,18 +196,18 @@ that all of this is my own work.
 \begin{enumerate}[label=(\alph*)]
   \item We run 2-means on the given dataset.
     \begin{enumerate}
-      \item We begin the algorithm with the centroids $\mu_1 = [2,3]$ and $\mu_2 = [2,-1]$.
+      \item We begin the algorithm with the centroids $\bm{\mu}_1 = [2,3]$ and $\bm{\mu}_2 = [2,-1]$.
       \begin{enumerate}[label=(\arabic*)]
         \item We first compute the cluster assignments. We have:
         \begin{align*}
-          d(\mu_1, \phi(x_1)) &= 10\\
-          d(\mu_2, \phi(x_1)) &= 2 \\
-          d(\mu_1, \phi(x_2)) &= 2 \\
-          d(\mu_2, \phi(x_2)) &= 10 \\
-          d(\mu_1, \phi(x_3)) &= 10\\
-          d(\mu_2, \phi(x_3)) &= 2 \\
-          d(\mu_1, \phi(x_4)) &= 2 \\
-          d(\mu_2, \phi(x_4)) &= 9
+          d(\bm{\mu}_1, \phi(x_1)) &= 10\\
+          d(\bm{\mu}_2, \phi(x_1)) &= 2 \\
+          d(\bm{\mu}_1, \phi(x_2)) &= 2 \\
+          d(\bm{\mu}_2, \phi(x_2)) &= 10 \\
+          d(\bm{\mu}_1, \phi(x_3)) &= 10\\
+          d(\bm{\mu}_2, \phi(x_3)) &= 2 \\
+          d(\bm{\mu}_1, \phi(x_4)) &= 2 \\
+          d(\bm{\mu}_2, \phi(x_4)) &= 9
         \end{align*}
         which implies our assignemnts are:
         \begin{align*}
@@ -218,19 +218,19 @@ that all of this is my own work.
         \end{align*}
       \item Given the above cluster assignments, we can compute the new centroids as:
       \begin{align*}
-        \mu_1 &= [1.5, 2] \\
-        \mu_2 &= [1.5, 0]
+        \bm{\mu}_1 &= [1.5, 2] \\
+        \bm{\mu}_2 &= [1.5, 0]
       \end{align*}
       \item We now recompute the assignments, and we have:
       \begin{align*}
-        d(\mu_1, \phi(x_1)) &= 4.25\\
-        d(\mu_2, \phi(x_1)) &= 2.25 \\
-        d(\mu_1, \phi(x_2)) &= 0.25 \\
-        d(\mu_2, \phi(x_2)) &= 4.25 \\
-        d(\mu_1, \phi(x_3)) &= 8.25 \\
-        d(\mu_2, \phi(x_3)) &= 4.25 \\
-        d(\mu_1, \phi(x_4)) &= 0.25 \\
-        d(\mu_2, \phi(x_4)) &= 4.25
+        d(\bm{\mu}_1, \phi(x_1)) &= 4.25\\
+        d(\bm{\mu}_2, \phi(x_1)) &= 2.25 \\
+        d(\bm{\mu}_1, \phi(x_2)) &= 0.25 \\
+        d(\bm{\mu}_2, \phi(x_2)) &= 4.25 \\
+        d(\bm{\mu}_1, \phi(x_3)) &= 8.25 \\
+        d(\bm{\mu}_2, \phi(x_3)) &= 4.25 \\
+        d(\bm{\mu}_1, \phi(x_4)) &= 0.25 \\
+        d(\bm{\mu}_2, \phi(x_4)) &= 4.25
       \end{align*}
       which implies:
       \begin{align*}
@@ -241,18 +241,18 @@ that all of this is my own work.
       \end{align*}
       The assignments are unchaged. As such, we can stop the algorithm with the above assignments and centroids.
     \end{enumerate}
-    \item We now do another iteration with the initialize centroids as $\mu_1 = [0,1]$ and $\mu_2 = [3,2]$.
+    \item We now do another iteration with the initialize centroids as $\bm{\mu}_1 = [0,1]$ and $\bm{\mu}_2 = [3,2]$.
     \begin{enumerate}
       \item We first compute the assignments:
         \begin{align*}
-          d(\mu_1, \phi(x_1)) &= 2 \\
-          d(\mu_2, \phi(x_1)) &= 8 \\
-          d(\mu_1, \phi(x_2)) &= 2 \\
-          d(\mu_2, \phi(x_2)) &= 4 \\
-          d(\mu_1, \phi(x_3)) &= 10 \\
-          d(\mu_2, \phi(x_3)) &= 4 \\
-          d(\mu_1, \phi(x_4)) &= 5 \\
-          d(\mu_2, \phi(x_4)) &= 1
+          d(\bm{\mu}_1, \phi(x_1)) &= 2 \\
+          d(\bm{\mu}_2, \phi(x_1)) &= 8 \\
+          d(\bm{\mu}_1, \phi(x_2)) &= 2 \\
+          d(\bm{\mu}_2, \phi(x_2)) &= 4 \\
+          d(\bm{\mu}_1, \phi(x_3)) &= 10 \\
+          d(\bm{\mu}_2, \phi(x_3)) &= 4 \\
+          d(\bm{\mu}_1, \phi(x_4)) &= 5 \\
+          d(\bm{\mu}_2, \phi(x_4)) &= 1
         \end{align*}
         which implies our assignemnts are:
         \begin{align*}
@@ -263,19 +263,19 @@ that all of this is my own work.
         \end{align*}
       \item Given the above cluster assignments, we can compute the new centroids as:
         \begin{align*}
-          \mu_1 &= [1, 1] \\
-          \mu_2 &= [2.5, 1]
+          \bm{\mu}_1 &= [1, 1] \\
+          \bm{\mu}_2 &= [2.5, 1]
         \end{align*}
       \item We now recompute the assignments, and we have:
         \begin{align*}
-          d(\mu_1, \phi(x_1)) &= 1 \\
-          d(\mu_2, \phi(x_1)) &= 3.25 \\
-          d(\mu_1, \phi(x_2)) &= 1 \\
-          d(\mu_2, \phi(x_2)) &= 3.25 \\
-          d(\mu_1, \phi(x_3)) &= 5 \\
-          d(\mu_2, \phi(x_3)) &= 1.25 \\
-          d(\mu_1, \phi(x_4)) &= 2 \\
-          d(\mu_2, \phi(x_4)) &= 1.25
+          d(\bm{\mu}_1, \phi(x_1)) &= 1 \\
+          d(\bm{\mu}_2, \phi(x_1)) &= 3.25 \\
+          d(\bm{\mu}_1, \phi(x_2)) &= 1 \\
+          d(\bm{\mu}_2, \phi(x_2)) &= 3.25 \\
+          d(\bm{\mu}_1, \phi(x_3)) &= 5 \\
+          d(\bm{\mu}_2, \phi(x_3)) &= 1.25 \\
+          d(\bm{\mu}_1, \phi(x_4)) &= 2 \\
+          d(\bm{\mu}_2, \phi(x_4)) &= 1.25
         \end{align*}
         which implies:
         \begin{align*}
@@ -287,6 +287,78 @@ that all of this is my own work.
          The assignments are unchaged. As such, we can stop the algorithm with the above assignments and centroids.
       \end{enumerate}
     \end{enumerate}
+
+    \item In ``submission.py''.
+    \item We present a modified version of the $K$-means algorithm which incorporates our prior knowledge about how certain examples will cluster. Our inputs to this algorithm are $\{ x_i \}, K$, and $S$ (as defined in the problem statement).
+      \begin{enumerate}
+        \item The first step in the algorithm is converting $S$ into two more useful data-structures. The first it to take $S$ and convert isa mapping $M = \{i : c_i\}$ such $\forall (i, j) \in S$, $c_i = c_j$. We can do this in $O(n)$ time be iterating over $S$, checking if either $i$ or $j$ is already mapped (or if both, making sure they are consistent) and assigning the corresponding value, or creating a new cluster value. The second data structure is simply the reverse mapping $R = \{c : \{i \mid M[i] = c \} \}$, which can again be done in $O(n)$ time.
+        \item The second step is to choose our centroids, $\bm{\mu}_k$ for $k \in \{1, \cdots, K\}$. This can be done in the same way as in the typical $K$-means algorithm. We now enter the training loop.
+        \item The first step in this training loop is to compute the assignments $z_i$, leaving $\bm{\mu}_k$ fixed. We break this into two pieces.
+          \begin{itemize}
+            \item For $i \notin keys(M)$, we compute the assignment the same way we do for $K$-means. That is to say:
+              $$
+                z_i = \arg\min_{k \in \{1,\cdots,K \}} || \phi(x_i) - \bm{\mu}_k ||_2^2
+              $$
+            \item For $i \in keys(M)$, we modify the assignment computation to take into account that changing the assignment for $i$ will also change the assignment for all the samples represented by $R[M[i]]$. As such, we must minimize the distance that all of these samples will have to the selected centroid. Note that as an optimization, we can check if we've already already processed the fixed-cluster $c = M[i]$, and if we have, we can skip this example since the assignment won't change for any other elements. As such, what we have is:
+              $$
+                z_{j : j \in R[M[i]]} = \arg\min_{k \in \{1 \cdots K \}} \sum_{l : l \in R[M[i]]} || \phi(x_{l}) - \bm{\mu}_k ||_2^2
+              $$
+          \end{itemize}
+          With the above, we have now computed all assignments $z_i$ with the additional restrictions imposed by $S$.
+        \item The second step in the training loop is to compute the new centers $\bm{\mu}_k$ given that we hold the assignments fixed. We leave this unmodified from the original $K$-means algorithm. That is to say, given our above assignments, we simply compute:
+          $$
+            \mu_k = \frac{1}{| i : z_i = k|}\sum_{i : z_i = k} \phi(x_i)
+          $$
+      \end{enumerate}
+
+      The above algorithm is guaranteed to converge to a local minimum, given the constraints. We note that we always satisfy the constraints impossed by $S$, and that our reconstruction loss always decreases at each iteration. For the second step in our iteration loop, this is fairly obvious (as we move the centers to be the average of the selected clusters, which is unmodified from typical $K$-means). For the first step, it takes only a bit of algebra to see that we're decreasing the reconstruction loss. We have:
+      \begin{align*}
+        \sum_{i=1}^n ||\phi(x_i) - \bm{\mu}_{z_i} ||_2^2 &= \sum_{i \notin keys(M)} || \phi(x_i) - \bm{\mu}_{z_i} ||_2^2 + \sum_{i \in keys(M)} ||\phi(x_i) - \bm{\mu}_{z_i} ||_2^2 \\
+        &= \sum_{i \notin keys(M)} || \phi(x_i) - \bm{\mu}_{z_i} ||_2^2  + \sum_{c \in values(M)} \sum_{i \in R[c]} ||\phi(x_i) - \bm{\mu}_{z_i} ||_2^2 \\
+      \end{align*}
+      As we can see, if we ever elect to change an assignment $z_i$, it will be only because it minimized the reconstruction loss.
+
+    \item By running K-means multiple times on the same dataset, we can better explore the possible results. As was showin in 4a above, K-means simply finds a local-minimum (not the global minimum), and as such, different results are possible. By running K-means multiple times, we can collect a sample of these results and select the one that makes the most sense/has the lowest loss.
+
+    \item If we scale all dimensions of both our initial centroids and our data points by some factor, we are guaranteed to retrieve the same clusters after running $K$-means. This is because the assignment remains unchanged, and the centroids will end-up scaled by the same factor, which implies the assignments on the following iteration will remain unchanged, and so on.
+
+    The assignments are unchanged:
+    \begin{align*}
+      z_i' &= \arg\min_{k \in \{1, \cdots K\}} || c\phi(x_i) - c\bm{\mu}_k ||_2^2 \\
+      &= \arg\min c ||\phi(x_i) - \bm{\mu}_k ||_2^2 \tag{properties of distance metric} \\
+      &= \arg\min ||\phi(x_i) - \bm{\mu}_k ||_2^2 \tag{definition of $\arg\min$} \\
+      &= z_i
+    \end{align*}
+    And we note that the new $\bm{\mu}_k'$ are simply $c\bm{\mu}_k$, so the cycle will continue in each iteration.
+    \begin{align*}
+      \bm{\mu}_k' &= \frac{1}{|\{ i : z_i' = k\}|}\sum_{i:z_i' = k}c \phi(x_i) \\
+      &= c \frac{1}{|\{ i : z_i = k\}|}\sum_{i:z_i = k}\phi(x_i)\tag{assignment unchanged, properties of sum} \\
+      &= c\bm{\mu}_k
+    \end{align*}
+
+    However, scaling just some dimensions does not leave the assignments unchanged. For the extreme example, simply take three points:
+    \begin{align*}
+      \phi(x_1) &= [0,0] \\
+      \phi(x_2) &= [1,0] \\
+      \phi(x_3) &= [0,2]
+    \end{align*}
+    and suppose we initialize our cluster centers for $2$-means as:
+    \begin{align*}
+      \bm{\mu_1} &= [1,0] \\
+      \bm{\mu_2} &= [0,2]
+    \end{align*}
+    We can immediately see that $z_1 = 1$, $z_2 = 1$ and $z_3 = 2$. However, let's scale the first dimension by some factor, for our purposes, let's pick $c = 10$. We now have:
+    \begin{align*}
+      \phi(x_1)' &= [0,0] \\
+      \phi(x_2)' &= [10,0] \\
+      \phi(x_3)' &= [0,2]
+    \end{align*}
+    and 
+     \begin{align*}
+      \bm{\mu_1}' &= [10,0] \\
+      \bm{\mu_2}' &= [0,2]
+    \end{align*}
+    Not surprisingly, it is now clear that $z_1' = 2 \neq z_1$ (the other two centers obviously remain unchanged). While trivial, this example demonstrates that scaling along particular directions can have significant effect on the result of $k$-means. The intuition is that the ordering of distances between points is not preserved when only scaling along some dimensions.
   \end{enumerate}
 
 \end{document}
