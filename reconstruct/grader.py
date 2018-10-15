@@ -44,10 +44,10 @@ QUERIES_BOTH = [
     'stff',
     'hllthr',
     'thffcrndprncndrw',
-    'ThstffffcrndPrncndrwmntdthrhrssndrdn', # WRONG
+    'ThstffffcrndPrncndrwmntdthrhrssndrdn',
     'whatsup',
     'ipovercarrierpigeon',
-    'aeronauticalengineering', # WRONG
+    'aeronauticalengineering',
     'themanwiththegoldeneyeball',
     'lightbulbsneedchange',
     'internationalplease',
