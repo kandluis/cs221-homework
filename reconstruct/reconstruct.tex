@@ -24,7 +24,7 @@ that all of this is my own work.
 
 \section*{Problem 1}
 
-\begin{enumerate}
+\begin{enumerate}[label=(\alph*)]
 \item To show that this greedy algorithm is suboptimal, simply consider the following set-up. First, we work with a $1$-gram model, and consider the input:
 $$
 \text{``thesecount'}
@@ -69,7 +69,77 @@ $$
   u(\text{``these''}) + u(\text{``count''}) < u(\text{``the''}) + u(\text{``secount''})
 $$
 mainly because of an extremely high cost associated with $u(\text{``secount''})$.
+
+\item In ``submissions.py''.
 \end{enumerate}
 
 
+\section*{Problem 2}
+
+\begin{enumerate}[label=(\alph*)]
+  \item We simply consider the sequence of vowel-free words:
+  $$
+    mny s vl.
+  $$
+  Let us define first possibleFills:
+  \begin{align*}
+    \text{possibleFills}(\text{mny}) &= \{ \text{money}, \text{many} \} \\
+    \text{possibleFills}(\text{s}) &= \{\text{is}, \text{sea} \} \\
+    \text{possibleFills}(\text{vl}) &=  \{ \text{evil, veil} \}
+  \end{align*}
+  We now consider how our greedy algorithm will proceed above.
+
+  \begin{itemize}
+    \item The algorithm will first pick ``many'', given that $\text{bigramCost}(\text{-BEGIN-}, \text{money}) > \text{bigramCost}(\text{-BEGIN-}, \text{many})$, since in English, more sentences begin with ``many''.
+    \item Next, it will select ``sea'', since $\text{bigramCost}(\text{many}, \text{sea}) < \text{bigramCost}(\text{many}, \text{is})$ give that ``many is'' is grammatically incorrect. 
+    \item Next, it will select ``veil'' since $\text{bigramCost}(\text{sea}, \text{veil}) < \text{bigramCost}(\text{sea}, \text{evil})$, which is a somewhat reasonable assumption.
+  \end{itemize}
+  In this case, the greedy algorithm will therefore end with the output ``Many sea vail'' with a relatively high bigram cost, due to high cost of (many, sea), and (sea, vail).
+
+  However, note that the optimal reconstruction would have been ``Money is evil'' given the significantly lower costs of (money, is) and (is, evil).
+  \item In ``submissions.py''.
+\end{enumerate}
+
+\section*{Problem 3}
+
+\begin{enumerate}[label=(\alph*)]
+  \item We present the formal definition of the search problem below. We can define the states as consisting of the tuples $(w, \text{text})$ where $w$ is the fully-vowelized word which was previously selected to be part of our output (or a special token signifying the start, if nothing was previously selected), and $\text{text}$ is the sequence of characters that remain to be split into words and for vowels to be inserted. More formally, let our input query be $q = b_0b_1 \cdots b_n$, a query string of $n$ constants where $b_0$ is a special token specifying the start of a string. Then our states are:
+  \begin{align*}
+    \text{States}(b_0b_1 \cdots b_n) &= \{(b_0, b_1b_2\cdots b_n) \} \cup \bigcup_{i=1}^n
+    \bigcup_{j=i}^n \{(w, b_jb_{j+1}\cdots b_{n}) \mid w \in \text{possibleFills}(b_ib_{i+1}\cdots b_{j-1} b_j)\}
+  \end{align*}
+  Given the above definition of our states, it's easy to see what our start state $s_{\text{start}}$ is:
+  $$
+    s_{\text{start}} = (b_0, b_1b_2 \cdots b_n)
+  $$
+  recalling that $b_0$ is oure special token specifying the start of a string.
+
+  We continue by defining our $\text{Actions}(s)$ for some state $s = (w, b_ib_{i+1} \cdots b_n)$. Intuitively, the actions simply consist of two things -- picking a ``split point'' $i \leq j \leq n$ in the remaining characters such that we will have two substring $b_i \cdots b_j$ and $b_{j+1}\cdots b_{n}$ (which is the empty string when $j + 1 >  n$). We can formalize the above by definining our action space as:
+  $$
+    \text{Actions}((w, b_ib_{i+1} \cdots b_n)) = \bigcup_{j=i}^n \{p_j \mid p_j \in \text{possibleFills}(b_ib_{i+1}\cdots b_{j})\}
+  $$
+  We continue expanding on the above by explicitly defining our successor function, which can be formally defined as:
+  $$
+    \text{Succ}((w, b_ib_{i+1} \cdots b_n), p_j) = (p_j, b_{j+1}b_{j+1}\cdots b_n)
+  $$
+  Next, we need to formally define the $\text{Cost}(s, a)$ of taking a particular action in state $s$. This can be directly defined for our problem as:
+  $$
+    \text{Cost}((w, b_ib_{i+1} \cdots b_n), p_j) = \text{bigramCost}(w, p_j)
+  $$
+  since it is just the cost of selecting $p_j$ as the next word.
+
+  Finally, we now simply need to consider the end test. This too can easily be defined as follows:
+  $$
+    \text{IsEnd}((w, b_ib_{i+1} \cdots b_n)) = i > n
+  $$
+  since we reach an end state whenever we have no further characters to split (ie, we have an empty string).
+
+  \item In ``submissions.py''.
+  \item
+  \item 
+  \begin{itemize}
+    \item Yes, UCS is a special case of $A^*$. We can see this my nothing UCS is simply $A*$ where we have the same states, actions, starting state, end states, and costs. However, for UCS, we must have that the heuristic function $h$ is given by $h(s) = 0$. Therefore UCS is a less generic algorithm.
+    \item Yes, BFS is a special case of UCS. BFS is simply UCS where we have the same states, actions, starting state, and end states. However, for BFS, we have that $\text{Cost}(s,a) = 1$ always (ie, our cost function is one). Therefore, BFS is a special case of UCS. Thefore BFS is a less generic algorithm.
+  \end{itemize}
+\end{enumerate}
 \end{document}
