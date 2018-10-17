@@ -135,7 +135,48 @@ mainly because of an extremely high cost associated with $u(\text{``secount''})$
   since we reach an end state whenever we have no further characters to split (ie, we have an empty string).
 
   \item In ``submissions.py''.
-  \item
+  \item We can define the unigram cost function simply as follows:
+  $$
+    u_b(w) = \min_{w'} b(w', w)
+  $$
+  We can pre-compute the above and store in a lookup table. This can be done once, and will take $O(|W|^2)$ where $|W|$ is the size of our word corpus. We assume this pre-computation is done for the below relaxed problem statement.
+
+  We now present the formal definition of the relaxed search problem, $P_{\text{rel}}$ below. Let our input query be $q = b_1 \cdots b_n$, a query string of $n$ constants.
+  \begin{align*}
+    \text{States}_{\text{rel}}(b_1 \cdots b_n) &= \bigcup_{i=1}^n \{(b_ib_{i+1}\cdots b_{n})\}
+  \end{align*}
+  Given the above definition of our states, it's easy to see what our start state $s_{\text{start}}$ is:
+  $$
+    s_{\text{rel}_{\text{start}}} = (b_1b_2 \cdots b_n)
+  $$
+
+  We continue by defining our $\text{Actions}(s)$ for some state $s = (b_ib_{i+1} \cdots b_n)$. Intuitively, the actions simply consist of two things -- picking a ``split point'' $i \leq j \leq n$ in the remaining characters such that we will have two substring $b_i \cdots b_j$ and $b_{j+1}\cdots b_{n}$ (which is the empty string when $j + 1 >  n$). We can formalize the above by definining our action space as:
+  $$
+    \text{Actions}_{\text{rel}}(b_ib_{i+1} \cdots b_n) = \bigcup_{j=i}^n \{p_j \mid p_j \in \text{possibleFills}(b_ib_{i+1}\cdots b_{j})\}
+  $$
+  We continue expanding on the above by explicitly defining our successor function, which can be formally defined as:
+  $$
+    \text{Succ}_{\text{rel}}((b_ib_{i+1} \cdots b_n), p_j) = (b_{j+1}b_{j+1}\cdots b_n)
+  $$
+  Next, we need to formally define the $\text{Cost}(s, a)$ of taking a particular action in state $s$. This can be directly defined for our relaxed problem as:
+  $$
+    \text{Cost}_{\text{rel}}((b_ib_{i+1} \cdots b_n), p_j) = u_b(p_j)
+  $$
+  since it is just the unigram cost of selecting $p_j$ as the next word.
+
+  Finally, we now simply need to consider the end test. This too can easily be defined as follows:
+  $$
+    \text{IsEnd}_{\text{rel}}((b_ib_{i+1} \cdots b_n)) = i > n
+  $$
+  since we reach an end state whenever we have no further characters to split (ie, we have an empty string). 
+
+  With the above relaxed problem, it's quite easy to see that:
+  \begin{align*}
+    \text{Cost}_{\text{rel}}((b_ib_{i+1}\cdots b_n), p_j) &= u_b(p_j) \tag{definition of Cost} \\
+    &= \min_{w'} b(w', p_j) \tag{definition of $u_b$}\\
+    &\leq b(w, p_j) \tag{where $w$ is the previous word picked, as in original problem} \\
+    &= \text{Cost}((w, b_ib_{i+1}\cdots b_n), p_j)
+  \end{align*}
   \item 
   \begin{itemize}
     \item Yes, UCS is a special case of $A^*$. We can see this my nothing UCS is simply $A*$ where we have the same states, actions, starting state, end states, and costs. However, for UCS, we must have that the heuristic function $h$ is given by $h(s) = 0$. Therefore UCS is a less generic algorithm.
