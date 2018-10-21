@@ -65,5 +65,52 @@ that all of this is my own work.
 
 \begin{enumerate}[label=(\alph*)]
   \item It is not always the case that $V_1(s_{\text{start}}) \geq V_2(s_{\text{start}})$. For a counter-examples, see ``submission.py''.
+  \item The algorithm is rather straight-forward in the case where we have an acyclic MDP.
+  \begin{itemize}
+    \item The first-step in the algorithm is to topologically sort the graph. It is well-known that for a DAG, a topological sorting is possible and can be computed by a modified version of DFS in linear time \footnote{\url{https://en.wikipedia.org/wiki/Topological_sorting\#Depth-first_search}}
+    \item Once we have this topological sorting of the states, we process each state in reverse-topological order and compute
+    $$
+      V(s) = \max_{a \in A} \left\{ \sum_{s' \in \text{Succ}(s,a)}T(s,a,s' )[R(s,a,s') + V(s')] \right\}
+    $$ directly for each such state.
+    \item After this single pass over the states, we return the resulting value function.
+  \end{itemize}
+  We claim that the computed $V(s) = V_{\text{opt}}(s)$ (ie, in this single pass, we've computed the optimal value function). To undertand why, we must recall that a topological sorting is one such that for every edge transition $(s, a, s')$, from $s$ to $s'$, $s$ comes before $s'$ in the ordering. In our algorithm above, we processed these states in reverse order (ie, we calculate the value of $s'$ before we compute the value of $s$). More formally, consider all terminal states (ie, states with no successors). These states are processed first by our algorithm, given us the base case:
+  \begin{align*}
+    V(s') = 0 = V_\text{opt}(s') \tag{for all terminal states $s'$}
+  \end{align*}
+  Now let us assume $V(s') = V_\text{opt}(s')$ for all $s'$ which our algorithm has already processed (ie, if our algorithm is processing states $s$, then the above holds true for all states $s'$ which fall after $s$ in the toplogical sort). Consider the processing of state $s$. For this state, our algorithm will compute:
+  \begin{align*}
+    V(s) &= \max_{a \in A} \left\{ \sum_{s' \in \text{Succ}(s,a)}T(s,a,s' )[R(s,a,s') + V(s')] \right\} \tag{definition of our algorithm} \\
+    &= \max_{a \in A} \left\{ \sum_{s' \in \text{Succ}(s,a)}T(s,a,s' )[R(s,a,s') + V_{\text{opt}}(s')] \right\} \tag{all $s'$ are descendants of $s$, and therefore, by the inductive hypothesis, we have $V(s') = V_\text{opt}(s')$} \\
+    &= V_{\text{opt}}(s) \tag{definition of $V_\text{opt}$}
+  \end{align*}
+  \item Following the hint, the solution to this problem is essentially given to us in lecture. The problem already provides States', Actions'(s), and $\gamma'$. As per Percy's lecture notes, we define the transition probabilities and rewards as follows:
+  \begin{align*}
+    T'(s, a, s') &=
+      \begin{cases} 
+        (1-\gamma) & s' = o \\
+        \gamma T(s, a, s') & \text{otherwise}
+     \end{cases} \\
+    R'(s, a, s') &= 
+      \begin{cases} 
+        0 & s' = o \\
+        R(s, a, s') & \text{otherwise}
+      \end{cases}
+  \end{align*}
+  Informally, with probability $(1-\gamma)$ every state can now end in a terminal state with (receiving $0$ reward). All other transitions probabilities are discounted by $\gamma$. We claim that $V_{\text{opt}}(s) = V'_{\text{opt}}$ for all $s \in \text{States}$. We can prove this directly. First, let's recall that if $V_{\text{opt}}(s)$ exists, it is the unique solution to:
+  $$
+    V_{\text{opt}}(s) = \max_{a \in \text{Actions}(s)}\left\{ \sum_{s' \in \text{Succ}(s,a)} T(s,a,s')[R(s,a,s
+  ') + V_\text{opt}(s'))] \right\}
+  $$
+
+
+  Now let us consider a state $s \in \text{States}$. Then we have:
+  \begin{align*}
+    V'_{\text{opt}}(s) &= \max_{a \in \text{Actions'}(s)}\left \{ \sum_{s' \in \text{Succ'}(s,a)} T'(s,a,s')[R(s,a,s') + V'_{\text{opt}}(s')] \right\} \tag{definition of $V'_{\text{opt}}$}\\
+    &= \max_{a \in \text{Actions}(s)}\left \{ T'(s,a,o)[R'(s,a,o) + V'_{\text{opt}}(o)] + \sum_{s' \in \text{Succ}(s,a)} T'(s,a,s')[R'(s,a,s') + V'_{\text{opt}}(s')] \right\} \tag{$\text{Actions}'(s) = \text{Actions}(s)$ and $\text{Succ}'(s,a) = \{o\} \cup \text{Succ}(s,a)$ by contruction} \\
+    &= \max_{a \in \text{Actions}(s)}\left \{ \sum_{s' \in \text{Succ}(s,a)} \gamma T(s,a,s')[R(s,a,s') + V'_{\text{opt}}(s')] \right\} \tag{$R'(s,a,o) + V'_{\text{opt}}(o) = 0$ and definition of $R'$ and $T'$}.
+  \end{align*}
+  Note that the above equation is precisely the equation that $V_{\text{opt}}(s)$ solves. Therefore, we must have that $V_{\text{opt}}(s)$ and $V'_{\text{opt}}(s)$ are the same function.
+
 \end{enumerate}
 \end{document}

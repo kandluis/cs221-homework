@@ -25,7 +25,7 @@ class CounterexampleMDP(util.MDP):
     # Remember that if |state| is an end state, you should return an empty list [].
     def succAndProbReward(self, state, action):
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        return [(-1, 0.2, 0), (1, 0.8, 10)] if state == 0 else []
+        return [(-1, 0.2, 10), (1, 0.8, 0)] if state == 0 else []
         # END_YOUR_CODE
 
     # Set the discount factor (float or integer) for your counterexample MDP.
