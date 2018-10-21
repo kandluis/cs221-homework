@@ -138,7 +138,8 @@ grader.addBasicPart('4a-basic', test4a, 5, maxSeconds=10, description="Basic tes
 
 
 def test4aHidden():
-    mdp = solution.smallMDP
+    smallMDP = submission.BlackjackMDP(cardValues=[1,5], multiplicity=2, threshold=10, peekCost=1)
+    mdp = smallMDP
     mdp.computeStates()
     rl = submission.QLearningAlgorithm(mdp.actions, mdp.discount(),
                                    submission.identityFeatureExtractor,
