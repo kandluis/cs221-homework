@@ -129,5 +129,9 @@ that all of this is my own work.
   The reason for this is relatively straight-forward. Due to the large nature of the MDP, even after 30,000 trials, our $\epsilon$-greedy learning policy will still leave a significant portion of the state-action space unexplored. This is further exacerbated by the fact that our feature extractor for this section is the identityFeatureExtractor, which treats each state-action pair completely independently. This means that for all of the un-explored state-action space, we actually have learned \textit{nothing} and cannot generalize.
 
   As such, for this much larger MDP, $Q$-learning performs poorly.
+  \item In ``submission.py''.
+  \item The sampled average reward for optimal policy from original MDP run on the modified MDP is 6.83776666667 (over 30000 simulations run with the optimal policy). If instead we train directly on the modified MDP, the sampled average reward for Q-Learning during training is 9.58873333333 (over 30000 training simulations). Using the optimal policy after these 30000 training simulations, the sampled avarage reward of this new optimal policy (without further training) is 12.0.
+
+  As we can see, the rewards are best when training directly on the new MDP, rather than using even the optimial policy from the original MDP. This makes sense, since taking an optimal policy from one MDP to another means that we'll be making poor decisions in particular states. For the blackjack example, for example, the original optimal policy is likely to `Take' on 16 -- however, this is certainly no longer the case is the threshold is lowered. It's much better, therefore, to just learn from the new MDP.
 \end{enumerate}
 \end{document}
