@@ -79,7 +79,51 @@ class BlackjackMDP(util.MDP):
     #   don't include that state in the list returned by succAndProbReward.
     def succAndProbReward(self, state, action):
         # BEGIN_YOUR_CODE (our solution is 53 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        totalCardValueInHand, nextCardIndexIfPeeked, deckCardCounts = state
+        # Given the index of a card taken and candidate score, returns new state.
+        def successorStateForTake(score, index):
+            newCount = tuple(count if i != index else count - 1 for i, count in enumerate(deckCardCounts))
+            return (score, None, None if sum(newCount) == 0 or score > self.threshold else newCount)
+        # Given the index of a card taken and candidate score, returns reward.
+        def rewardForTake(score, index):
+            newCount = tuple(count if i != index else count - 1 for i, count in enumerate(deckCardCounts))
+            # If we ran out of cards, we might have to return a reward.
+            if sum(newCount) == 0:
+                return score if score <= self.threshold else 0
+            return 0
+
+        # We're in an end-state. Either player quit, busted, or we ran out of cards.
+        if deckCardCounts is None:
+            return []
+
+        # Player is trying to peek twice.
+        if action == 'Peek' and nextCardIndexIfPeeked is not None:
+            return []
+        
+        # Player is trying to peek for the first time.
+        if action == 'Peek':
+            totalCards = float(sum(deckCardCounts))
+            return [((totalCardValueInHand, peekIndex, deckCardCounts),
+                      count/totalCards,
+                      -self.peekCost) for peekIndex, count in enumerate(deckCardCounts) if count > 0]
+
+        # Player is trying to take.
+        if action == 'Take':
+            # Player previously peeked, transition is deterministics.
+            if nextCardIndexIfPeeked is not None:
+                newScore = totalCardValueInHand + self.cardValues[nextCardIndexIfPeeked]
+                return [(successorStateForTake(newScore, nextCardIndexIfPeeked),
+                         1, rewardForTake(newScore, nextCardIndexIfPeeked))]
+            # Player is just taking at random. No reward, but score increases.
+            totalCards = float(sum(deckCardCounts))
+            return [(successorStateForTake(totalCardValueInHand + self.cardValues[takeIndex], takeIndex),
+                      count/totalCards,
+                      rewardForTake(totalCardValueInHand + self.cardValues[takeIndex], takeIndex))
+                    for takeIndex, count in enumerate(deckCardCounts) if count > 0]
+        
+        # Player quits, reward depends on whether she's bust or not.
+        if action == 'Quit':
+            return [((0, None, None), 1, 0 if totalCardValueInHand > self.threshold else totalCardValueInHand)]
         # END_YOUR_CODE
 
     def discount(self):
@@ -94,7 +138,7 @@ def peekingMDP():
     optimal action at least 10% of the time.
     """
     # BEGIN_YOUR_CODE (our solution is 2 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    return BlackjackMDP(cardValues=[3,4,21], multiplicity=3, threshold=20, peekCost=1)
     # END_YOUR_CODE
 
 ############################################################
@@ -142,7 +186,15 @@ class QLearningAlgorithm(util.RLAlgorithm):
     # self.getQ() to compute the current estimate of the parameters.
     def incorporateFeedback(self, state, action, reward, newState):
         # BEGIN_YOUR_CODE (our solution is 12 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        eta = self.getStepSize()
+        pred = self.getQ(state, action)
+        target = reward
+        # If not a terminal state, we must compute value estimate.
+        if newState is not None:
+            target += self.discount * max([self.getQ(newState, possibleAction)
+                for possibleAction in self.actions(newState)])
+        for key, value in self.featureExtractor(state, action):
+            self.weights[key] -= eta*(pred - target)*value
         # END_YOUR_CODE
 
 # Return a single-element list containing a binary (indicator) feature
@@ -166,7 +218,22 @@ def simulate_QL_over_MDP(mdp, featureExtractor):
     # that you add a few lines of code here to run value iteration, simulate Q-learning on the MDP,
     # and then print some stats comparing the policies learned by these two approaches.
     # BEGIN_YOUR_CODE
-    pass
+    mdp.computeStates()
+    allStates = mdp.states
+    # Run value iteration.
+    solver = util.ValueIteration()
+    solver.solve(mdp)
+    optimalVIPolicy = solver.pi
+
+    # Run Q-Learning algorithm and compute its optimal policy.
+    ql = QLearningAlgorithm(actions=mdp.actions, discount=mdp.discount(), featureExtractor=featureExtractor)
+    util.simulate(smallMDP, ql, numTrials=30000, maxIterations=10000)
+    ql.explorationProb = 0.0
+    optimalQLPolicy = {state: ql.getAction(state) for state in allStates}
+
+    # Compute some statistics
+    numDifferent = sum(1 for state in allStates if optimalQLPolicy[state] != optimalVIPolicy[state])
+    print("{} out of {} states have different actions".format(numDifferent, len(allStates)))
     # END_YOUR_CODE
 
 
@@ -186,7 +253,11 @@ def blackjackFeatureExtractor(state, action):
     total, nextCard, counts = state
 
     # BEGIN_YOUR_CODE (our solution is 8 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    features = [((action, total), 1)]
+    if counts is not None:
+        features.append(((action, tuple(1 if count > 0 else 0 for count in counts)), 1))
+        features += [((action, card, count), 1) for card, count in enumerate(counts)]
+    return features
     # END_YOUR_CODE
 
 ############################################################
@@ -204,6 +275,25 @@ def compare_changed_MDP(original_mdp, modified_mdp, featureExtractor):
     # Consider adding some code here to simulate two different policies over the modified MDP
     # and compare the rewards generated by each.
     # BEGIN_YOUR_CODE
-    pass
+    solver = util.ValueIteration()
+    solver.solve(original_mdp)
+    optimalVIOriginalMDPPolicy = solver.pi
+
+    fixedRL = util.FixedRLAlgorithm(optimalVIOriginalMDPPolicy)
+    rewards = util.simulate(modified_mdp, fixedRL, numTrials=30000, maxIterations=10000)
+    print("Sampled average reward for optimal policy from original MDP is {}.".format(sum(rewards) / float(len(rewards))))
+
+    # Train Q-learning.
+    ql = QLearningAlgorithm(actions=modified_mdp.actions, discount=modified_mdp.discount(), featureExtractor=featureExtractor)
+    trainingRewards = util.simulate(modified_mdp, ql, numTrials=30000, maxIterations=10000)
+    print("Sampled average reward for Q-Learning during training is {}.".format(sum(trainingRewards) / float(len(trainingRewards))))
+    ql.explorationProb = 0.0
+    modified_mdp.computeStates()
+    learnedQLPolicy = {state: ql.getAction(state) for state in modified_mdp.states}
+    fixedQLRL = util.FixedRLAlgorithm(learnedQLPolicy)
+    rewardsQL = util.simulate(modified_mdp, fixedQLRL, numTrials=30000, maxIterations=10000)
+    print("Sampled average reward for policy learned directly on new problem with Q-Learning is {}.".format(sum(rewardsQL) / float(len(rewardsQL))))
+
+
     # END_YOUR_CODE
 

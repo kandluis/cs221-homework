@@ -111,6 +111,23 @@ that all of this is my own work.
     &= \max_{a \in \text{Actions}(s)}\left \{ \sum_{s' \in \text{Succ}(s,a)} \gamma T(s,a,s')[R(s,a,s') + V'_{\text{opt}}(s')] \right\} \tag{$R'(s,a,o) + V'_{\text{opt}}(o) = 0$ and definition of $R'$ and $T'$}.
   \end{align*}
   Note that the above equation is precisely the equation that $V_{\text{opt}}(s)$ solves. Therefore, we must have that $V_{\text{opt}}(s)$ and $V'_{\text{opt}}(s)$ are the same function.
+\end{enumerate}
 
+
+\section*{Problem 3}
+
+\begin{enumerate}[label=(\alph*)]
+  \item In ``submission.py''.
+  \item In ``submission.py''.
+\end{enumerate}
+
+\section*{Problem 4}
+\begin{enumerate}[label=(\alph*)]
+  \item In ``submission.py''.
+  \item The policy learned by Q-Learning matches exactly the policy learned by value iteration in the small MDP. However, in the large MDP, the policy learned by Q-Learning differs from the optimal policy significantly (in our experiment, for example, 752 our of 2705 states have non-optimal actions selected by our Q-Learning algorithm). 
+
+  The reason for this is relatively straight-forward. Due to the large nature of the MDP, even after 30,000 trials, our $\epsilon$-greedy learning policy will still leave a significant portion of the state-action space unexplored. This is further exacerbated by the fact that our feature extractor for this section is the identityFeatureExtractor, which treats each state-action pair completely independently. This means that for all of the un-explored state-action space, we actually have learned \textit{nothing} and cannot generalize.
+
+  As such, for this much larger MDP, $Q$-learning performs poorly.
 \end{enumerate}
 \end{document}
