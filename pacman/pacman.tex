@@ -1,0 +1,43 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage{hyperref}
+
+\begin{document}
+
+\begin{center}
+{\Large CS221 Fall 2018 Homework 5}
+
+\begin{tabular}{rl}
+SUNet ID: & 05794739 \\
+Name: & Luis Perez \\
+Collaborators: &
+\end{tabular}
+\end{center}
+
+By turning in this assignment, I agree by the Stanford honor code and declare
+that all of this is my own work.
+
+\section*{Problem 1}
+
+
+\begin{enumerate}[label=(\alph*)]
+  \item We can write the recurrence as a straight-forward generalization of what was presented in lecture. We'll have:
+  $$
+    V_{\text{minmax}}(s,d) =
+      \begin{cases}
+        \text{Utility}(s) & \text{IsEnd}(s) \\
+        \text{Eval}(s) & d = 0 \\
+        \max_{a \in \text{Actions}(s)} \left\{ V_{\text{minmax}}(\text{Succ}(s, a), d)\right\} & \text{Player}(s) = a_0 \\
+        \min_{a \in \text{Actions}(s)} \left\{ V_{\text{minmax}}(\text{Succ}(s, a), d)\right\} & \text{Player}(s) \in \{ a_1, \cdots a_{n-1}\} \\
+        \min_{a \in \text{Actions}(s)} \left\{ V_{\text{minmax}}(\text{Succ}(s, a), d - 1)\right\} & \text{Player}(s) = a_n \\
+      \end{cases}
+  $$
+  \item In ``submission.py''
+\end{enumerate}
+
+\end{document}
