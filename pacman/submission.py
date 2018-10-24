@@ -170,19 +170,19 @@ class MinimaxAgent(MultiAgentSearchAgent):
       if max_depth == 0:
         return self.evaluationFunction(state)
       nextPlayerIndex = (player + 1) % state.getNumAgents()
-      nextDepth = (max_depth - 1) if player == (state.getNumAgents() - 1) else nextDepth
+      nextDepth = (max_depth - 1) if player == (state.getNumAgents() - 1) else max_depth
       optimizingFunction = max if player == self.index else min
       return optimizingFunction([ValueMiniMaxDepthBound(
-        state.generateSuccessor(state, player), nextDepth, nextPlayerIndex)
+        state.generateSuccessor(player, action), nextDepth, nextPlayerIndex)
         for action in legalActions])
     
-    legalActions = state.getLegalActions(self.index)
+    legalActions = gameState.getLegalActions(self.index)
     # No further search to perform, arbitrarily return a legal action.
     if gameState.getNumAgents() == 1 and self.depth == 0:
       return legalActions[0]
     value, action = max([(ValueMiniMaxDepthBound(
-            gameState.generateSuccessor(gameState, action),
-            max_depth, (self.index + 1) % gameState.getNumAgents()),
+            gameState.generateSuccessor(self.index, action),
+            self.depth, (self.index + 1) % gameState.getNumAgents()),
           action) for action in legalActions])
     return action
     # END_YOUR_CODE
