@@ -119,7 +119,7 @@ class MultiAgentSearchAgent(Agent):
     self.index = 0 # Pacman is always agent index 0
     self.evaluationFunction = util.lookup(evalFn, globals())
     self.depth = int(depth)
-    self.debug = True
+    self.debug = False
     self.calledBefore = False
 
   def postProcess(self, value, action):
