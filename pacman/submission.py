@@ -301,12 +301,28 @@ def betterEvaluationFunction(currentGameState):
   """
     Your extreme, unstoppable evaluation function (problem 4).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: The idea behind the below is as follows.
+
+    Losing is always avoided, significantly, by heavily penalizing all such states.
+    Winning is heavily rewarded (above just a simple score), so that PacMan always tries to win.
+
+    For everything else, we use BFS to compute distances to food items, scared ghosts, and
+    normal ghosts from pacman. We then use a simply formula (arrived at after experimentation)
+    to combine these features into a single store.
+
+    Intuitively, here are the properties we're generally looking for:
+      1. A higher game score implies a higher evaluation score.
+      2. Closer food items imply higher scores.
+      3. A lower number of capsules implies a higher score.
+      4. A lower number of food items left implies a higher score.
+      5. Closer scared ghosts imply a higher score (because we can eat them)
+      6. Further active ghosts imply a higher score (because they won't eat us)
   """
 
   # BEGIN_YOUR_CODE (our solution is 26 lines of code, but don't worry if you deviate from this)
   # Find the distance to the closest food item.
   currentScore = scoreEvaluationFunction(currentGameState)
+  score = currentScore
   if currentGameState.isLose(): 
     return -float("inf")
   if currentGameState.isWin():
@@ -332,26 +348,23 @@ def betterEvaluationFunction(currentGameState):
   # Find the food that's closest to us.
   foodlist = currentGameState.getFood().asList()
   closestFoodDistance = min([distanceFunction(food) for food in  foodlist])
+  score -= 1.7 * closestFoodDistance
 
-  # Some score heuristics.
   numberOfCapsulesLeft = len(currentGameState.getCapsules())
+  score -= 22*numberOfCapsulesLeft
   numberOfFoodsLeft = len(foodlist)
+  score -= 4.4*numberOfFoodsLeft
   
   activeGhosts = [ghost for ghost in currentGameState.getGhostStates() if not ghost.scaredTimer]
   scaredGhosts = [ghost for ghost in currentGameState.getGhostStates() if ghost.scaredTimer]
 
   distanceToClosestActiveGhost = min([float("inf")] + [distanceFunction(ghost.getPosition())
     for ghost in activeGhosts])
-  distanceToClosestActiveGhost = max(distanceToClosestActiveGhost, 5)
+  score -= 2.1*(1./distanceToClosestActiveGhost) 
   distanceToClosestScaredGhost = 0 if not scaredGhosts else min([distanceFunction(ghost.getPosition())
     for ghost in scaredGhosts])
-
-  score = 1    * currentScore + \
-          -1.5 * closestFoodDistance + \
-          -2    * (1./distanceToClosestActiveGhost) + \
-          -2   * distanceToClosestScaredGhost + \
-          -20 * numberOfCapsulesLeft + \
-          -4    * numberOfFoodsLeft
+  score -= 1.9*distanceToClosestScaredGhost
+  
   return score
   # END_YOUR_CODE
 

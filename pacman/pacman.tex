@@ -61,4 +61,28 @@ that all of this is my own work.
   \item In ``submission.py''
 \end{enumerate}
 
+
+\section*{Problem 3}
+\begin{enumerate}[label=(\alph*)]
+  \item In ``submission.py''
+  \item The idea behind the below is as follows.
+
+    Losing is always avoided, significantly, by heavily penalizing all such states.
+    Winning is heavily rewarded (above just a simple score), so that PacMan always tries to win.
+
+    For everything else, we use BFS to compute distances to food items, scared ghosts, and
+    normal ghosts from pacman. We then use a simply formula (arrived at after experimentation)
+    to combine these features into a single store.
+
+    Intuitively, here are the properties we're generally looking for:
+    \begin{enumerate}
+      \item A higher game score implies a higher evaluation score.
+      \item Closer food items imply higher scores.
+      \item A lower number of capsules implies a higher score.
+      \item A lower number of food items left implies a higher score.
+      \item Closer scared ghosts imply a higher score (because we can eat them)
+      \item Further active ghosts imply a higher score (because they won't eat us)
+    \end{enumerate}
+\end{enumerate}
+
 \end{document}
