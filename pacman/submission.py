@@ -1,8 +1,9 @@
 from util import manhattanDistance
-from game import Directions
+from game import Directions, Actions
 import random, util
 
 from game import Agent
+import pdb
 
 class ReflexAgent(Agent):
   """
@@ -118,6 +119,68 @@ class MultiAgentSearchAgent(Agent):
     self.index = 0 # Pacman is always agent index 0
     self.evaluationFunction = util.lookup(evalFn, globals())
     self.depth = int(depth)
+    self.debug = True
+    self.calledBefore = False
+
+  def postProcess(self, value, action):
+    """
+    Post-processing of values and actions.
+    """
+    if self.debug and not self.calledBefore:
+      self.calledBefore = True
+      print("Value of initial state is {} with action {}.".format(value, action))
+
+  def GeneralizedTreeSearch(self, state, player, max_depth, alpha=None, beta=None, pacman_reducer=max, ghost_reducer=min):
+    """
+    Computes the value of state using minimax algorithm with a maximum-depth and alpha beta pruning. 
+
+    Args:
+      state: The current state for which we're computing the value.
+      max_depth: The maximum full-round plays to execute before using the evaluation function.
+      player: the player for which to compute the value.
+      alpha: the lower bound on the value of the max node. We stop expanding the actions in a min
+        node as soon as we find a value <= alpha, since we know that the max node above will just choose
+        alpha in this case.
+      beta: the upper bound on the value of the min node. We stop expanding the actions in a max
+        node as soon as we find a value >= beta, since we know that the min node above will just choose
+        beta as the value in this case.
+        If None, no pruning is applied.
+      pacman_reducer: The reducer function f((currValue, currAction), (accValue, accAction)) -> (accValue, accAction)
+        to reduce Pacman values computed for future states at each iteration. On the first iteration, accValue is -inf
+        and accAction is None.
+      ghost_reducer: The reducer function f((currValue, currAction), (accValue, accAction)) -> (accValue, accAction)
+        to reduce Ghost values computed for future states at each iteration. On the first iteration, accValue is inf
+        and the accAction is None.
+      TODO(luis): Note that alpha/beta pruning is not supported with anything other than min/max reducers.
+    """
+    legalActions = state.getLegalActions(player)
+    if state.isWin() or state.isLose() or not legalActions or max_depth == 0:
+      return (self.evaluationFunction(state), None)
+    nextPlayerIndex = (player + 1) % state.getNumAgents()
+    nextDepth = (max_depth - 1) if player == (state.getNumAgents() - 1) else max_depth
+    optimizer, optimalValue = (pacman_reducer, -float("inf")) if player == self.index else (ghost_reducer, float("inf"))
+    # For max players, we prune using beta and need to update alpha (with new max).
+    # For min players, we prune using alpha and need to update beta (with new min)
+    pruneThreshold, thresholdToUpdate = (beta, alpha) if player == self.index else (alpha, beta)
+    optimalAction = None
+    for action in legalActions:
+      nextState = state.generateSuccessor(player, action)
+      nextStateValue, _ = self.GeneralizedTreeSearch(
+        nextState, nextPlayerIndex, nextDepth,
+        thresholdToUpdate if player == self.index else alpha,
+        thresholdToUpdate if player != self.index else beta,
+        pacman_reducer=pacman_reducer, ghost_reducer=ghost_reducer)
+      optimalValue, optimalAction = optimizer((nextStateValue, action), (optimalValue, optimalAction))
+      # Note here that for alpha, max we have value >= beta implies max(value, beta) == value
+      # Similarly, for beta, min we have value <= alpha implies min(value, alpha) == value
+      # As such, this is a condition where we immediately prune.
+      if pruneThreshold is not None and optimizer(pruneThreshold, optimalValue) == optimalValue:
+        return (optimalValue, optimalAction)
+      # We update our threshold to update. alpha in the max case, and beta in the min case, with the new
+      # tighter bound based on the optimal value.
+      thresholdToUpdate = optimizer(thresholdToUpdate, optimalValue) if thresholdToUpdate is not None else None
+    return (optimalValue, optimalAction)
+    
 
 ######################################################################################
 # Problem 1b: implementing minimax
@@ -163,27 +226,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     # BEGIN_YOUR_CODE (our solution is 26 lines of code, but don't worry if you deviate from this)
-    def ValueMiniMaxDepthBound(state, max_depth, player):
-      legalActions = state.getLegalActions(player)
-      if state.isWin() or state.isLose() or not legalActions:
-        return state.getScore()
-      if max_depth == 0:
-        return self.evaluationFunction(state)
-      nextPlayerIndex = (player + 1) % state.getNumAgents()
-      nextDepth = (max_depth - 1) if player == (state.getNumAgents() - 1) else max_depth
-      optimizingFunction = max if player == self.index else min
-      return optimizingFunction([ValueMiniMaxDepthBound(
-        state.generateSuccessor(player, action), nextDepth, nextPlayerIndex)
-        for action in legalActions])
-    
-    legalActions = gameState.getLegalActions(self.index)
-    # No further search to perform, arbitrarily return a legal action.
-    if gameState.getNumAgents() == 1 and self.depth == 0:
-      return legalActions[0]
-    value, action = max([(ValueMiniMaxDepthBound(
-            gameState.generateSuccessor(self.index, action),
-            self.depth, (self.index + 1) % gameState.getNumAgents()),
-          action) for action in legalActions])
+    value, action = self.GeneralizedTreeSearch(
+      state=gameState, player=self.index, max_depth=self.depth)
+    self.postProcess(value, action)
     return action
     # END_YOUR_CODE
 
@@ -201,7 +246,11 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
 
     # BEGIN_YOUR_CODE (our solution is 49 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    value, action = self.GeneralizedTreeSearch(
+      state=gameState, player=self.index, max_depth=self.depth,
+      alpha=-float("inf"), beta=float("inf"))
+    self.postProcess(value, action)
+    return action
     # END_YOUR_CODE
 
 ######################################################################################
@@ -221,7 +270,28 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
     """
 
     # BEGIN_YOUR_CODE (our solution is 25 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    def streamingAverage(curr, acc):
+      """
+      Computes the streaming average for the ghosts to be used in expectimax search. We overload the
+      unused "action" parameter in the tuple to keep count of the number of actions, which we use to
+      then compute the streamingAverage over the returned values.
+      """
+      currValue, _ = curr
+
+      streamingAverage, numActions = acc
+      # This happens when we receive our very first action for this round.
+      if numActions is None:
+        numActions = 0
+        streamingAverage = 0.0
+      numActions += 1
+      newAverage = (streamingAverage * numActions + currValue) / float(numActions)
+      return (newAverage, numActions)
+
+    value, action = self.GeneralizedTreeSearch(
+      state=gameState, player=self.index, max_depth=self.depth,
+      ghost_reducer=streamingAverage)
+    self.postProcess(value, action)
+    return action
     # END_YOUR_CODE
 
 ######################################################################################
@@ -235,7 +305,54 @@ def betterEvaluationFunction(currentGameState):
   """
 
   # BEGIN_YOUR_CODE (our solution is 26 lines of code, but don't worry if you deviate from this)
-  raise Exception("Not implemented yet")
+  # Find the distance to the closest food item.
+  currentScore = scoreEvaluationFunction(currentGameState)
+  if currentGameState.isLose(): 
+    return -float("inf")
+  if currentGameState.isWin():
+    return 100000*currentScore
+  
+  def minDistanceToAllReachablePoints(pos, walls):
+    queue = util.Queue()
+    queue.push((pos, 0))
+    visited = {}
+    while not queue.isEmpty():
+      curr, distance = queue.pop()
+      visited[curr] = distance
+      for neighbor in Actions.getLegalNeighbors(curr, walls):
+        if neighbor not in visited:
+          queue.push((neighbor, distance + 1))
+    # print(visited)
+    return lambda loc: visited[(int(loc[0] + 0.5),int(loc[1] + 0.5))]
+
+  pos = currentGameState.getPacmanPosition()
+  distanceFunction = lambda loc: util.manhattanDistance(pos, loc)
+  # distanceFunction = minDistanceToAllReachablePoints(pos, currentGameState.getWalls())
+
+  # Find the food that's closest to us.
+  foodlist = currentGameState.getFood().asList()
+  closestFoodDistance = min([distanceFunction(food) for food in  foodlist])
+
+  # Some score heuristics.
+  numberOfCapsulesLeft = len(currentGameState.getCapsules())
+  numberOfFoodsLeft = len(foodlist)
+  
+  activeGhosts = [ghost for ghost in currentGameState.getGhostStates() if not ghost.scaredTimer]
+  scaredGhosts = [ghost for ghost in currentGameState.getGhostStates() if ghost.scaredTimer]
+
+  distanceToClosestActiveGhost = min([float("inf")] + [distanceFunction(ghost.getPosition())
+    for ghost in activeGhosts])
+  distanceToClosestActiveGhost = max(distanceToClosestActiveGhost, 5)
+  distanceToClosestScaredGhost = 0 if not scaredGhosts else min([distanceFunction(ghost.getPosition())
+    for ghost in scaredGhosts])
+
+  score = 1    * currentScore + \
+          -1.5 * closestFoodDistance + \
+          -2    * (1./distanceToClosestActiveGhost) + \
+          -2   * distanceToClosestScaredGhost + \
+          -20 * numberOfCapsulesLeft + \
+          -4    * numberOfFoodsLeft
+  return score
   # END_YOUR_CODE
 
 # Abbreviation

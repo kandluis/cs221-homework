@@ -40,4 +40,25 @@ that all of this is my own work.
   \item In ``submission.py''
 \end{enumerate}
 
+\section*{Problem 2}
+\begin{enumerate}[label=(\alph*)]
+  \item In ``submission.py''
+\end{enumerate}
+
+\section*{Problem 3}
+\begin{enumerate}[label=(\alph*)]
+  \item We can write the recurrence as a straight-forward generalization of what was presented in 1a. We'll have:
+  $$
+    V_{\text{minmax}}(s,d) =
+      \begin{cases}
+        \text{Utility}(s) & \text{IsEnd}(s) \\
+        \text{Eval}(s) & d = 0 \\
+        \max_{a \in \text{Actions}(s)} \left\{ V_{\text{minmax}}(\text{Succ}(s, a), d)\right\} & \text{Player}(s) = a_0 \\
+        \frac{1}{|\text{Actions}(s)|}\sum_{a \in \text{Actions}(s)}  V_{\text{minmax}}(\text{Succ}(s, a), d) & \text{Player}(s) \in \{ a_1, \cdots a_{n-1}\} \\
+        \frac{1}{|\text{Actions}(s)|}\sum_{a \in \text{Actions}(s)}  V_{\text{minmax}}(\text{Succ}(s, a), d - 1) & \text{Player}(s) = a_n \\
+      \end{cases}
+  $$
+  \item In ``submission.py''
+\end{enumerate}
+
 \end{document}
