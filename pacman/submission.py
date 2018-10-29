@@ -337,27 +337,10 @@ def betterEvaluationFunction(currentGameState):
     visited = {}
     while not queue.isEmpty():
       (x,y), distance = queue.pop()
-      # We might have to shuffle around some ghosts from scared to adversarial since a new timestep took place.
-      # newScaredGhosts = {pos: timer - 1 for pos, timer in scaredGhosts.items() if timer - 1 > 0}
-      # adversarialGhosts |= { pos for pos, timer in scaredGhosts.items() if timer - 1 == 0 }
-      # scaredGhosts = newScaredGhosts
-      # If an un-eaten food, eat and restart BFS.
-      if (x,y) not in eaten:
-        reward = 0
-        restart = False
-        if food[x][y]:
-          reward += 10
-          restart = True
-        # Eating a capsule causes all ghosts to become scared with 40 timesteps.
-        #if (x,y) in capsules:
-        #  scaredGhosts = {key : 40 for key in set(scaredGhosts.keys()) | adversarialGhosts}
-        #  restart = True
-        #if (x,y) in scaredGhosts:
-        #  reward += 200
-        #  restart = True
-        if restart:
-          eaten[(x,y)] = (distance, reward)
-          return greedyApproachCost((x,y), eaten, maxRestarts if maxRestarts is None else maxRestarts - 1)
+      if (x,y) not in eaten and food[x][y]:
+        eaten[(x,y)] = (distance, 10)
+        return greedyApproachCost((x,y), eaten, maxRestarts if maxRestarts is None else maxRestarts - 1)
+          
       visited[(x,y)] = distance
       actions = Actions.getLegalNeighbors((x,y), walls)
       random.shuffle(actions)
@@ -388,51 +371,28 @@ def betterEvaluationFunction(currentGameState):
 
   # distanceFunction = lambda loc: util.manhattanDistance(pos, loc)
   distanceFunction = minDistanceToAllReachablePoints(currentGameState.getPacmanPosition())
-  
-  currentScore = scoreEvaluationFunction(currentGameState)
+  def winEvaluationScore():
+    currentScore = scoreEvaluationFunction(currentGameState)
+    currentScore += sum({ 200 / (1.0 + distanceFunction(pos)) for pos in scaredGhosts })
+    greedyScore = currentScore - greedyApproachCost(pacmanPos=currentGameState.getPacmanPosition(), eaten={}, maxRestarts=None)
+    return greedyScore
 
-  # The more scared ghosts the better a state is since we can eat them.
-  currentScore += sum({ 200 / (1.0 + distanceFunction(pos)) for pos in scaredGhosts })
-  greedyScore = currentScore - greedyApproachCost(pacmanPos=currentGameState.getPacmanPosition(), eaten={}, maxRestarts=None)
-  return greedyScore
+  def loseEvaluationScore():
+    if not adversarialGhosts: return -1000
+    closestGhost = min([distanceFunction(pos) for pos in adversarialGhosts])
+    # The closer the ghost, the more we want this state.
+    return -closestGhost
 
-  
-  # Each capsule will maximum let us kill the ghosts twice, each for 200 points.
-  maxForKillingGhosts = 400*len(currentGameState.getCapsules())
-  maxPossibleScore = score + maxFromFood + maxForWin + maxForKillingGhosts
-  
+  # Compute an upperbound on our score.
+  maxFromFood = 10 * food.count()
+  maxForWin = 500
+  maxForKillingGhosts = 400*len(currentGameState.getCapsules()) + 200*len(scaredGhosts)
+  maxPossibleScore = scoreEvaluationFunction(currentGameState) + maxFromFood + maxForWin + maxForKillingGhosts
 
-  pos = currentGameState.getPacmanPosition()
-
-  # Find the food that's closest to us.
-  foodlist = currentGameState.getFood().asList()
-  if len(foodlist) != 0:
-    closestFoodDistance = min([distanceFunction(food) for food in  foodlist])
-    score += 1.0/closestFoodDistance
-
-  numberOfCapsulesLeft = len(currentGameState.getCapsules())
-  score -= 22*numberOfCapsulesLeft
-  numberOfFoodsLeft = len(foodlist)
-  score -= 4.4*numberOfFoodsLeft
-  
-  activeGhosts = [ghost for ghost in currentGameState.getGhostStates() if not ghost.scaredTimer]
-  scaredGhosts = [ghost for ghost in currentGameState.getGhostStates() if ghost.scaredTimer]
-
-  if activeGhosts:
-    distanceToClosestActiveGhost = min([float("inf")] + [distanceFunction(ghost.getPosition())
-      for ghost in activeGhosts])
-    score -= 2.1*(1./(1 + distanceToClosestActiveGhost))
-  if scaredGhosts:
-    distanceToClosestScaredGhost = min([distanceFunction(ghost.getPosition()) for ghost in scaredGhosts])
-    score -= 1.9*distanceToClosestScaredGhost
-
-  # If this is a lose, rate games in opposite way of what we'd normally do.
-  # Or if you're winning, but not by enough.
-  if currentGameState.isLose(): 
-    return -score
-  if currentGameState.isWin():
-    return float("inf") if currentScore > 1350 else -currentScore
-  return score
+  # We know we can normally do well. Decide if we want to win our lose at this point.
+  #if maxPossibleScore > 1200:
+  return winEvaluationScore()
+  #return loseEvaluationScore()
   # END_YOUR_CODE
 
 # Abbreviation
