@@ -324,22 +324,27 @@ def betterEvaluationFunction(currentGameState):
   walls = currentGameState.getWalls()
   food = currentGameState.getFood()
   capsules = set(currentGameState.getCapsules())
-  global scaredGhosts, adversarialGhosts
-  scaredGhosts = {ghost.getPosition() : ghost.scaredTimer for ghost in currentGameState.getGhostStates() if ghost.scaredTimer}
+  scaredGhosts = {util.nearestPoint(ghost.getPosition()) : ghost.scaredTimer
+    for ghost in currentGameState.getGhostStates() if ghost.scaredTimer}
   adversarialGhosts = {ghost.getPosition() for ghost in currentGameState.getGhostStates() if not ghost.scaredTimer}
-  def greedyApproachCost(pacmanPos, eaten, maxRestarts=None):
+  def greedyApproachCost(pacmanPos, eaten, reward=10, is_edible=lambda x,y: food[x][y], maxRestarts=None):
     """If we were to take a greedy route, ignoring ghosts, what is our cost"""
-    global scaredGhosts, adversarialGhosts
-    if maxRestarts is not None and maxRestarts == 0:
+    def end():
+      if len(eaten.values()) > 0:
+        costs, rewards = zip(*eaten.values())
+        return sum(costs) - sum(rewards)
       return 0
+    if maxRestarts is not None and maxRestarts == 0:
+      return end()
     queue = util.Queue()
     queue.push((pacmanPos, 0))
     visited = {}
     while not queue.isEmpty():
       (x,y), distance = queue.pop()
-      if (x,y) not in eaten and food[x][y]:
-        eaten[(x,y)] = (distance, 10)
-        return greedyApproachCost((x,y), eaten, maxRestarts if maxRestarts is None else maxRestarts - 1)
+      if (x,y) not in eaten and is_edible(x,y):
+        eaten[(x,y)] = (distance, reward)
+        return greedyApproachCost(pacmanPos=(x,y), eaten=eaten,
+          reward=reward, is_edible=is_edible, maxRestarts=maxRestarts if maxRestarts is None else maxRestarts - 1)
           
       visited[(x,y)] = distance
       actions = Actions.getLegalNeighbors((x,y), walls)
@@ -348,10 +353,7 @@ def betterEvaluationFunction(currentGameState):
         if neighbor not in visited:
           queue.push((neighbor, distance + 1))
         
-    if len(eaten.values()) > 0:
-      costs, rewards = zip(*eaten.values())
-      return sum(costs) - sum(rewards)
-    return 0
+    return end()
 
   def minDistanceToAllReachablePoints(pos):
     """Basically BFS to find how many steps it'll take to get places.
@@ -372,9 +374,13 @@ def betterEvaluationFunction(currentGameState):
   # distanceFunction = lambda loc: util.manhattanDistance(pos, loc)
   distanceFunction = minDistanceToAllReachablePoints(currentGameState.getPacmanPosition())
   def winEvaluationScore():
-    currentScore = scoreEvaluationFunction(currentGameState)
-    currentScore += sum({ 200 / (1.0 + distanceFunction(pos)) for pos in scaredGhosts })
-    greedyScore = currentScore - greedyApproachCost(pacmanPos=currentGameState.getPacmanPosition(), eaten={}, maxRestarts=None)
+    greedyScore = scoreEvaluationFunction(currentGameState)
+    greedyScore += sum({200 - distanceFunction(pos) for pos in scaredGhosts})
+    #if len(adversarialGhosts) == 2:
+      # Punish if the ghosts get too close to each other.
+    #  ghosts = list(adversarialGhosts)
+    #  greedyScore -= (greedyScore / 10.0) / (1 + minDistanceToAllReachablePoints(ghosts[0])(ghosts[1]))
+    greedyScore -= greedyApproachCost(pacmanPos=currentGameState.getPacmanPosition(), eaten={}, maxRestarts=None)
     return greedyScore
 
   def loseEvaluationScore():

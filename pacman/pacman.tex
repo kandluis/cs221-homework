@@ -65,7 +65,21 @@ that all of this is my own work.
 \section*{Problem 3}
 \begin{enumerate}[label=(\alph*)]
   \item In ``submission.py''
-  \item The idea behind the below is as follows.
+  \item Note that I tried a lot of things, many of which I didn't document here. In general, the final approach taken which achieved an average of 1505 points on the winning games (rather than 1337 as the PREVIOUS RESPONSE approach below), is as follows.
+
+  The idea is basically to improve on our previous approach in two ways. The first, we consider which states are better. Our value for a state is given by the sume of the following:
+  \begin{itemize}
+    \item Current score.
+    \item If we ignore ghost positions, what score will we achieve if we greedily (using BFS) eat the nearest food items as we move across the board from eating the remaining food (ie, we get $10$ for each food eaten, $-1$ for each step taken)
+    \item In order to encourage the eating of scared ghosts, for each scared ghost, if we're eating it, we receive $200$ points. Otherwise, we receive $200 -d$ where $d$ is the number of steps it would take us to get to the ghost to eat him. This is basically just an estimate for the reward we'd receive if we ate the ghosts.
+  \end{itemize}
+
+  The above is sufficient to achive $>1500$ average score, with a win rate of $90\%$.
+
+
+  PREVIOUS RESPONSE:
+
+  The idea behind the below is as follows.
 
     Losing is always avoided, significantly, by heavily penalizing all such states.
     Winning is heavily rewarded (above just a simple score), so that PacMan always tries to win.
