@@ -320,15 +320,61 @@ def betterEvaluationFunction(currentGameState):
   """
 
   # BEGIN_YOUR_CODE (our solution is 26 lines of code, but don't worry if you deviate from this)
-  # Find the distance to the closest food item.
-  currentScore = scoreEvaluationFunction(currentGameState)
-  score = currentScore
-  if currentGameState.isLose(): 
-    return -float("inf")
-  if currentGameState.isWin():
-    return 100000*currentScore
-  
-  def minDistanceToAllReachablePoints(pos, walls):
+  SCARED_TIMER = 40
+  walls = currentGameState.getWalls()
+  food = currentGameState.getFood()
+  capsules = set(currentGameState.getCapsules())
+  global scaredGhosts, adversarialGhosts
+  scaredGhosts = {ghost.getPosition() : ghost.scaredTimer for ghost in currentGameState.getGhostStates() if ghost.scaredTimer}
+  adversarialGhosts = {ghost.getPosition() for ghost in currentGameState.getGhostStates() if not ghost.scaredTimer}
+  def greedyApproachCost(pacmanPos, eaten, maxRestarts=None):
+    """If we were to take a greedy route, ignoring ghosts, what is our cost"""
+    global scaredGhosts, adversarialGhosts
+    if maxRestarts is not None and maxRestarts == 0:
+      return 0
+    queue = util.Queue()
+    queue.push((pacmanPos, 0))
+    visited = {}
+    while not queue.isEmpty():
+      (x,y), distance = queue.pop()
+      # We might have to shuffle around some ghosts from scared to adversarial since a new timestep took place.
+      # newScaredGhosts = {pos: timer - 1 for pos, timer in scaredGhosts.items() if timer - 1 > 0}
+      # adversarialGhosts |= { pos for pos, timer in scaredGhosts.items() if timer - 1 == 0 }
+      # scaredGhosts = newScaredGhosts
+      # If an un-eaten food, eat and restart BFS.
+      if (x,y) not in eaten:
+        reward = 0
+        restart = False
+        if food[x][y]:
+          reward += 10
+          restart = True
+        # Eating a capsule causes all ghosts to become scared with 40 timesteps.
+        #if (x,y) in capsules:
+        #  scaredGhosts = {key : 40 for key in set(scaredGhosts.keys()) | adversarialGhosts}
+        #  restart = True
+        #if (x,y) in scaredGhosts:
+        #  reward += 200
+        #  restart = True
+        if restart:
+          eaten[(x,y)] = (distance, reward)
+          return greedyApproachCost((x,y), eaten, maxRestarts if maxRestarts is None else maxRestarts - 1)
+      visited[(x,y)] = distance
+      actions = Actions.getLegalNeighbors((x,y), walls)
+      random.shuffle(actions)
+      for neighbor in actions:
+        if neighbor not in visited:
+          queue.push((neighbor, distance + 1))
+        
+    if len(eaten.values()) > 0:
+      costs, rewards = zip(*eaten.values())
+      return sum(costs) - sum(rewards)
+    return 0
+
+  def minDistanceToAllReachablePoints(pos):
+    """Basically BFS to find how many steps it'll take to get places.
+    
+    Returns a function that given a loc returns the minimum distance from pos to loc.
+    """
     queue = util.Queue()
     queue.push((pos, 0))
     visited = {}
@@ -338,17 +384,31 @@ def betterEvaluationFunction(currentGameState):
       for neighbor in Actions.getLegalNeighbors(curr, walls):
         if neighbor not in visited:
           queue.push((neighbor, distance + 1))
-    # print(visited)
-    return lambda loc: visited[(int(loc[0] + 0.5),int(loc[1] + 0.5))]
+    return lambda loc: visited[util.nearestPoint(loc)]
+
+  # distanceFunction = lambda loc: util.manhattanDistance(pos, loc)
+  distanceFunction = minDistanceToAllReachablePoints(currentGameState.getPacmanPosition())
+  
+  currentScore = scoreEvaluationFunction(currentGameState)
+
+  # The more scared ghosts the better a state is since we can eat them.
+  currentScore += sum({ 200 / (1.0 + distanceFunction(pos)) for pos in scaredGhosts })
+  greedyScore = currentScore - greedyApproachCost(pacmanPos=currentGameState.getPacmanPosition(), eaten={}, maxRestarts=None)
+  return greedyScore
+
+  
+  # Each capsule will maximum let us kill the ghosts twice, each for 200 points.
+  maxForKillingGhosts = 400*len(currentGameState.getCapsules())
+  maxPossibleScore = score + maxFromFood + maxForWin + maxForKillingGhosts
+  
 
   pos = currentGameState.getPacmanPosition()
-  distanceFunction = lambda loc: util.manhattanDistance(pos, loc)
-  # distanceFunction = minDistanceToAllReachablePoints(pos, currentGameState.getWalls())
 
   # Find the food that's closest to us.
   foodlist = currentGameState.getFood().asList()
-  closestFoodDistance = min([distanceFunction(food) for food in  foodlist])
-  score -= 1.7 * closestFoodDistance
+  if len(foodlist) != 0:
+    closestFoodDistance = min([distanceFunction(food) for food in  foodlist])
+    score += 1.0/closestFoodDistance
 
   numberOfCapsulesLeft = len(currentGameState.getCapsules())
   score -= 22*numberOfCapsulesLeft
@@ -358,13 +418,20 @@ def betterEvaluationFunction(currentGameState):
   activeGhosts = [ghost for ghost in currentGameState.getGhostStates() if not ghost.scaredTimer]
   scaredGhosts = [ghost for ghost in currentGameState.getGhostStates() if ghost.scaredTimer]
 
-  distanceToClosestActiveGhost = min([float("inf")] + [distanceFunction(ghost.getPosition())
-    for ghost in activeGhosts])
-  score -= 2.1*(1./distanceToClosestActiveGhost) 
-  distanceToClosestScaredGhost = 0 if not scaredGhosts else min([distanceFunction(ghost.getPosition())
-    for ghost in scaredGhosts])
-  score -= 1.9*distanceToClosestScaredGhost
-  
+  if activeGhosts:
+    distanceToClosestActiveGhost = min([float("inf")] + [distanceFunction(ghost.getPosition())
+      for ghost in activeGhosts])
+    score -= 2.1*(1./(1 + distanceToClosestActiveGhost))
+  if scaredGhosts:
+    distanceToClosestScaredGhost = min([distanceFunction(ghost.getPosition()) for ghost in scaredGhosts])
+    score -= 1.9*distanceToClosestScaredGhost
+
+  # If this is a lose, rate games in opposite way of what we'd normally do.
+  # Or if you're winning, but not by enough.
+  if currentGameState.isLose(): 
+    return -score
+  if currentGameState.isWin():
+    return float("inf") if currentScore > 1350 else -currentScore
   return score
   # END_YOUR_CODE
 
