@@ -65,7 +65,15 @@ that all of this is my own work.
 \section*{Problem 3}
 \begin{enumerate}[label=(\alph*)]
   \item In ``submission.py''
-  \item Note that I tried a lot of things, many of which I didn't document here. In general, the final approach taken which achieved an average of 1505 points on the winning games (rather than 1337 as the PREVIOUS RESPONSE approach below), is as follows.
+  \item After further trial, we've managed to achieve an average winning score of 1554. We did this by making just a few small tweaks to the algorith from our previous resonse.
+
+  \begin{itemize}
+    \item When we're getting close to winning, we ``look ahead'' to see if we're going to end-up in a winning-state. If we are, we add $500$ points to the score. The reasoning behind this is to encourage the Pacman to eat the last-pellet, as we noticed frequently that it would fail to do so.
+  \end{itemize}
+
+
+  PREVIOUSR RESPONSE 2:
+  Note that I tried a lot of things, many of which I didn't document here. In general, the final approach taken which achieved an average of 1505 points on the winning games (rather than 1337 as the PREVIOUS RESPONSE approach below), is as follows.
 
   The idea is basically to improve on our previous approach in two ways. The first, we consider which states are better. Our value for a state is given by the sume of the following:
   \begin{itemize}
@@ -77,7 +85,7 @@ that all of this is my own work.
   The above is sufficient to achive $>1500$ average score, with a win rate of $90\%$.
 
 
-  PREVIOUS RESPONSE:
+  PREVIOUS RESPONSE 1:
 
   The idea behind the below is as follows.
 

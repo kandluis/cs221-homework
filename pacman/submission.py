@@ -373,21 +373,29 @@ def betterEvaluationFunction(currentGameState):
 
   # distanceFunction = lambda loc: util.manhattanDistance(pos, loc)
   distanceFunction = minDistanceToAllReachablePoints(currentGameState.getPacmanPosition())
-  def winEvaluationScore():
-    greedyScore = scoreEvaluationFunction(currentGameState)
-    greedyScore += sum({200 - distanceFunction(pos) for pos in scaredGhosts})
-    #if len(adversarialGhosts) == 2:
-      # Punish if the ghosts get too close to each other.
-    #  ghosts = list(adversarialGhosts)
-    #  greedyScore -= (greedyScore / 10.0) / (1 + minDistanceToAllReachablePoints(ghosts[0])(ghosts[1]))
-    greedyScore -= greedyApproachCost(pacmanPos=currentGameState.getPacmanPosition(), eaten={}, maxRestarts=None)
-    return greedyScore
-
   def loseEvaluationScore():
     if not adversarialGhosts: return -1000
     closestGhost = min([distanceFunction(pos) for pos in adversarialGhosts])
     # The closer the ghost, the more we want this state.
     return -closestGhost
+
+  def winEvaluationScore():
+    greedyScore = scoreEvaluationFunction(currentGameState)
+    greedyScore += sum({200 - distanceFunction(pos) for pos in scaredGhosts})
+    # greedyScore += 30*len(currentGameState.getCapsules())
+    #if len(adversarialGhosts) == 2:
+      # Punish if the ghosts get too close to each other.
+    #  ghosts = list(adversarialGhosts)
+    #  greedyScore -= (greedyScore / 10.0) / (1 + minDistanceToAllReachablePoints(ghosts[0])(ghosts[1]))
+    greedyScore -= greedyApproachCost(pacmanPos=currentGameState.getPacmanPosition(), eaten={}, reward=10, maxRestarts=None)
+    # Look ahead one level to see if we'll win.
+    score = 0
+    if greedyScore > 1000:
+      for action in currentGameState.getLegalActions(0):
+        nextState = currentGameState.generateSuccessor(0, action)
+        if nextState.isWin():
+          score += 500
+    return greedyScore + score
 
   # Compute an upperbound on our score.
   maxFromFood = 10 * food.count()
@@ -396,9 +404,7 @@ def betterEvaluationFunction(currentGameState):
   maxPossibleScore = scoreEvaluationFunction(currentGameState) + maxFromFood + maxForWin + maxForKillingGhosts
 
   # We know we can normally do well. Decide if we want to win our lose at this point.
-  #if maxPossibleScore > 1200:
   return winEvaluationScore()
-  #return loseEvaluationScore()
   # END_YOUR_CODE
 
 # Abbreviation
