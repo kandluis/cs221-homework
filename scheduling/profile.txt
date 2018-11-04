@@ -1,12 +1,16 @@
 # or Unit or limit or per or quarter. You can ignore this for the first
 # few questions in problem 2.
 minUnits 0
-maxUnits 5
+maxUnits 4
 
 # These are the quarters that I need to fill out.
 # It is assumed that the quarters are sorted in chronological order.
-register Win2018
 register Spr2019
+register Sum2019
+register Aut2019
+register Win2019
+register Spr2020
+register Sum2020
 
 # Courses I've already taken
 taken CS103
@@ -36,31 +40,13 @@ taken MATH51
 taken PHIL150
 taken STATS116
 taken STATS305
+taken CS224N
 
 # Courses that I'm requesting
-request CS224N or CS223A or CS224S or CS229 or CS224U or CS231A
-request CS205A or CS225A or CS227B or CS229T or CS231B or CS232 or CS270 or CS273A or CS274 or CS275 or CS276 or CS331A or CS331B or CS371 or APPPHYS293 or BIOE332 or EE263 or EE364B or EE376A or ENGR205 or ENGR209A or MS&E251 or MS&E252 or MS&E351 or MS&E352 or MS&E353 or STATS202 or STATS315A or STATS315B
+request CS205A or CS225A or CS227B or CS229T or CS231B or CS232 or CS270 or CS273A or CS274 or CS275 or CS276 or CS331A or CS331B or CS371 or APPPHYS293 or BIOE332 or EE263 or EE364B or EE376A or ENGR205 or ENGR209A or MS&E251 or MS&E252 or MS&E351 or MS&E352 or MS&E353 or STATS202 or STATS315A or STATS315B or CS223A or CS224S or CS229 or CS224U or CS231A
 request CS154
-request CS261
+request CS246 or CS261 or CS265 or CS268 or CS354 or CS362 or CS367
 request CS166
-request CS228
-request CS246
-request CS254
-request CS255
-request CS262
-request CS263
-request CS265
-request CS266
-request CS267
-request CS268
-request CS334A
-request EE364A
-request CS341
-request CS354
-request CS355
-request CS357
-request CS362
-request CS364A
-request CS366
-request CS367
-request CS374
+request CS254 or CS262 or CS266 or CS334A or CS355 or CS364A or CS374
+request CS228 or CS255 or CS263 or CS267 or CS341 or CS357 or CS366 or EE364A
+
