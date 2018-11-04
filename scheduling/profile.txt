@@ -1,5 +1,3 @@
-# or Unit or limit or per or quarter. You can ignore this for the first
-# few questions in problem 2.
 minUnits 0
 maxUnits 4
 
