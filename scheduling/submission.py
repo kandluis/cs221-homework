@@ -317,14 +317,14 @@ def get_sum_variable(csp, name, variables, maxSum):
     for i, var in enumerate(variables):
         sVar = ('sum', name, var)
         csp.add_variable(sVar, domain)
-        if i == 0: csp.add_unary_factor(sVar, lambda s: 1 if s[0] == 0 else 0)
-        csp.add_binary_factor(var, sVar, lambda x, s: 1 if s[1] == (s[0] + x) else 0)
-        if prevVar: csp.add_binary_factor(prevVar, sVar, lambda p, s: 1 if p[1] == s[0] else 0)
+        if i == 0: csp.add_unary_factor(sVar, lambda s: s[0] == 0)
+        csp.add_binary_factor(var, sVar, lambda x, s: s[1] == (s[0] + x))
+        if prevVar: csp.add_binary_factor(prevVar, sVar, lambda p, s: p[1] == s[0])
         prevVar = sVar
     finalVar = ('sumFinal', name, '')
     csp.add_variable(finalVar, range(maxSum + 1))
-    if prevVar: csp.add_binary_factor(prevVar, finalVar, lambda p, f: 1 if p[1] == f else 0)
-    else: csp.add_unary_factor(finalVar, lambda f: 1 if f == 0 else 0)
+    if prevVar: csp.add_binary_factor(prevVar, finalVar, lambda p, f: p[1] == f)
+    else: csp.add_unary_factor(finalVar, lambda f: f == 0)
     return finalVar
     # END_YOUR_CODE
 
@@ -417,7 +417,11 @@ class SchedulingCSPConstructor():
         """
         # Problem 3a
         # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        for request in self.profile.requests:
+            if not request.quarters: continue
+            for quarter in self.profile.quarters:
+                if quarter in request.quarters: continue
+                csp.add_unary_factor((request, quarter), lambda cid: cid is None)
         # END_YOUR_CODE
 
     def add_request_weights(self, csp):
@@ -494,7 +498,31 @@ class SchedulingCSPConstructor():
         #         be enforced by the constraints added by add_quarter_constraints
 
         # BEGIN_YOUR_CODE (our solution is 16 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        for quarter in self.profile.quarters:
+            variables = [] # The variables added for the units this quarter.
+            for request in self.profile.requests:
+                # Don't process this request since it request the courses for not in this quarter.
+                if request.quarters and quarter not in request.quarters: continue
+                request_variables = []
+                for cid in request.cids:
+                    course = self.bulletin.courses[cid]
+                    # Don't process this course since it's not even offered this quarter.
+                    if not course.is_offered_in(quarter): continue
+                    variables.append((cid, quarter))
+                    request_variables.append((cid, quarter))
+                    csp.add_variable((cid, quarter), [0] + range(course.minUnits, course.maxUnits + 1))
+                    # Find all (request, quarter) variables where the request wants this course and OR 
+                    # them together, looking for any such (request, quarter) that will be assigned our course.
+                    reqs_for_course = [(req, quarter) for req in self.profile.requests if cid in req.cids]
+                    orVar = get_or_variable(csp, ((request, quarter), cid), reqs_for_course, cid)
+                    # Enforce that if the course is not assigned, units are 0, otherwise units are valid.
+                    csp.add_binary_factor(orVar, (cid, quarter), lambda courseAssigned, units: \
+                        (courseAssigned and course.minUnits <= units and units <= course.maxUnits) 
+                        or (not courseAssigned and units == 0))
+            if variables:
+                sumVar = get_sum_variable(csp, quarter, variables, self.profile.maxUnits)
+                csp.add_unary_factor(sumVar, lambda quarterUnits: \
+                    quarterUnits == self.profile.maxUnits)
         # END_YOUR_CODE
 
     def add_all_additional_constraints(self, csp):
