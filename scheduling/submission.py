@@ -514,7 +514,7 @@ class SchedulingCSPConstructor():
                     # Find all (request, quarter) variables where the request wants this course and OR 
                     # them together, looking for any such (request, quarter) that will be assigned our course.
                     reqs_for_course = [(req, quarter) for req in self.profile.requests if cid in req.cids]
-                    orVar = get_or_variable(csp, ((request, quarter), cid), reqs_for_course, cid)
+                    orVar = get_or_variable(csp, (("unit", request, quarter), cid), reqs_for_course, cid)
                     # Enforce that if the course is not assigned, units are 0, otherwise units are valid.
                     csp.add_binary_factor(orVar, (cid, quarter), lambda courseAssigned, units: \
                         (courseAssigned and course.minUnits <= units and units <= course.maxUnits) 
@@ -522,7 +522,7 @@ class SchedulingCSPConstructor():
             if variables:
                 sumVar = get_sum_variable(csp, quarter, variables, self.profile.maxUnits)
                 csp.add_unary_factor(sumVar, lambda quarterUnits: \
-                    quarterUnits == self.profile.maxUnits)
+                    self.profile.minUnits <= quarterUnits and quarterUnits <= self.profile.maxUnits)
         # END_YOUR_CODE
 
     def add_all_additional_constraints(self, csp):
