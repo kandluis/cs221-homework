@@ -12,7 +12,9 @@ def create_chain_csp(n):
     csp = util.CSP()
     # Problem 0c
     # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    [csp.add_variable(variable, domain) for variable in variables]
+    [csp.add_binary_factor(variables[i], variables[i+1],
+        lambda x,y: 1 if x != y else 0) for i in range(n-1)]
     # END_YOUR_CODE
     return csp
 
@@ -33,7 +35,15 @@ def create_nqueens_csp(n = 8):
     csp = util.CSP()
     # Problem 1a
     # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    # Domain specifies which column the queen will go on.
+    domain = [i for i in range(n)]
+    # Each variable corresponds to a queen in a given row. ie q0 is the variable for the queen
+    # on row 0. If q0 == 1, this means this queen is at position (0, 1) on the board.
+    variables = ['q%d' % i for i in range(n)]
+    [csp.add_variable(variable, domain) for variable in variables]
+    [csp.add_binary_factor(variables[row1], variables[row2],
+        lambda col1, col2: 1 if col1 != col2 and abs(row1 - row2) != abs(col1 - col2) else 0)
+        for row2 in range(n) for row1 in range(row2 + 1, n)]
     # END_YOUR_CODE
     return csp
 
@@ -234,7 +244,10 @@ class BacktrackingSearch():
             #       assignment, a variable, and a proposed value to this variable
             # Hint: for ties, choose the variable with lowest index in self.csp.variables
             # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-            raise Exception("Not implemented yet")
+            _, selectedIndex = min([
+                (len([val for val in self.domains[var] if self.get_delta_weight(assignment, var, val) != 0]), i)
+                for i, var in enumerate(self.csp.variables) if var not in assignment])
+            return self.csp.variables[selectedIndex]
             # END_YOUR_CODE
 
     def arc_consistency_check(self, var):
@@ -261,7 +274,17 @@ class BacktrackingSearch():
 
 
         # BEGIN_YOUR_CODE (our solution is 20 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        queue = collections.deque([var])
+        while queue:
+            var1 = queue.pop()
+            if self.csp.unaryFactors[var1]:
+                self.domains[var1] = [val1 for val1 in self.domains[var1] if self.csp.unaryFactors[var1][val1] != 0]
+            for var2 in self.csp.get_neighbor_vars(var1):
+                newVar2Domain = {val2 for val2 in self.domains[var2] for val1 in self.domains[var1]
+                    if self.csp.binaryFactors[var1][var2][val1][val2] != 0}        
+                if len(newVar2Domain) != len(set(self.domains[var2])):
+                    self.domains[var2] = list(newVar2Domain)
+                    queue.append(var2)
         # END_YOUR_CODE
 
 
@@ -289,7 +312,20 @@ def get_sum_variable(csp, name, variables, maxSum):
         iff the assignment of |variables| sums to |n|.
     """
     # BEGIN_YOUR_CODE (our solution is 18 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    prevVar = None
+    domain = [(i,j) for i in range(maxSum + 1) for j in range(maxSum + 1)]
+    for i, var in enumerate(variables):
+        sVar = ('sum', name, var)
+        csp.add_variable(sVar, domain)
+        if i == 0: csp.add_unary_factor(sVar, lambda s: 1 if s[0] == 0 else 0)
+        csp.add_binary_factor(var, sVar, lambda x, s: 1 if s[1] == (s[0] + x) else 0)
+        if prevVar: csp.add_binary_factor(prevVar, sVar, lambda p, s: 1 if p[1] == s[0] else 0)
+        prevVar = sVar
+    finalVar = ('sumFinal', name, '')
+    csp.add_variable(finalVar, range(maxSum + 1))
+    if prevVar: csp.add_binary_factor(prevVar, finalVar, lambda p, f: 1 if p[1] == f else 0)
+    else: csp.add_unary_factor(finalVar, lambda f: 1 if f == 0 else 0)
+    return finalVar
     # END_YOUR_CODE
 
 # importing get_or_variable helper function from util

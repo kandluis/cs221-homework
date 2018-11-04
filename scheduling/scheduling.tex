@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{bm}
 \usepackage{hyperref}
+\usepackage{bbm}
 
 \begin{document}
 
@@ -22,9 +23,84 @@ Collaborators: &
 By turning in this assignment, I agree by the Stanford honor code and declare
 that all of this is my own work.
 
+\section*{Problem 0}
+
+\begin{enumerate}[label=(\alph*)]
+  \item Constructing the CSP from this problem statement is somewhat straight-forward. We present the construct CSP below. We assume that each lighbulb is initially off.
+  \begin{itemize}
+    \item Variables: For each button $j = 1, \cdots, m$, we have a variable $B_i \in \{0,1\}$. We explicitly mention now that the Domain of each variables is $\{0,1\}$. Intuitively, each variable simply represents whether or not button $j$ is pressed.
+    \item Constraints: Lightbulbs are on only if toggled an odd number of times by the buttons selected. We set-up $n$ constraints (1-per lightbulb).
+    \begin{itemize}
+      \item Constraint Scope: For each lightbulb $i$, we define the set $M_i = \{j \mid i \in T_j \}$ (this is the set of buttons that toggle lighbulb $i$) and the scope $\text{Scope}(i) = \{B_k \mid k \in M_i \}$.
+      \item Constraint Expression: We then have the constraint expression given by $f_i(\text{Scope}(i)) = \left(\sum_{k} B_k\right) \mod 2$. 
+    \end{itemize}
+    The above enforce the constraint that for each lighbulb, an odd number of toggles must have been triggered given the configuration (since the lighbulbs start off, and odd number of toggles will leave them in the on position).
+  \end{itemize}
+  The above Variables and Constraints are sufficient to solve the problem. A solution exists if and only if the weight is $1$. Given our definition of constraints above, this implies that $\forall i$, $f_i(b) = 1$, which means that our selection of touched buttons must lead to all lighbulbs being turned on.
+
+  \item
+    \begin{enumerate}[label=\roman*]
+      \item There are two consistent assignments. $X_1 = 1, X_2 = 0, X_3 = 1$ and $X_1 = 0, X_1 = 1, X_2 = 0$.
+      \item `backtrack' will be called 9 times (including initial call) if we use the fixed ordering specified in the problem statement. The resulting call-stack (in tree form) is presented in Figure \ref{fig:backtrack_simple}.
+        \begin{figure}[!h]
+          \centering
+          \includegraphics[scale=0.3]{backtrack.jpg}
+          \caption{Backtrack using domain ordering ${0,1}$ and variable ordering ${X_1, X_3, X_2}$}
+          \label{fig:backtrack_simple}
+        \end{figure}
+      \item `backtrack' will be called 7 times (including initial call) if we use the fixed ordering specified in the problem statement with AC-3. The resulting call-stack (in tree form) is presented in Figure \ref{fig:backtrack_ac3}.
+       \begin{figure}[!h]
+          \centering
+          \includegraphics[scale=0.3]{backtrack_ac3.jpg}
+          \caption{Backtrack using domain ordering ${0,1}$ and variable ordering ${X_1, X_3, X_2}$ with AC-3}
+          \label{fig:backtrack_ac3}
+        \end{figure}
+    \end{enumerate}
+    \item In ``submission.py''.
+\end{enumerate}
+
 \section*{Problem 1}
 
 \begin{enumerate}[label=(\alph*)]
-  \item 
+  \item In ``submission.py''.
+  \item In ``submission.py''.
+  \item In ``submission.py''.
 \end{enumerate}
+
+\section*{Problem 2}
+
+\begin{enumerate}[label=(\alph*)]
+  \item As the hint suggest, we draw inspiration from the lecture slides. We therefore introduce the auxilirary variables $S_i$ for $1 \leq i \leq 3$ consisting of a tuple. The first element of this tuple will be equal the sum  of the elements $X_1, \cdots, X_{i-1}$, and the second element of this tuple will be equal to the sum of variables $X_1, \cdots X_{i}$. For simplicity, we can make all these variables have the same domain which is simply given by: $\{0,1,2,3,4,5,6 \} \times \{0,1,2,3,4,5,6 \}$.
+
+  More generally, the straight-forward domain is given by the below, where we assume that $\forall i, x \in \text{Domain}(X_i), x \geq 0$:
+  $$
+    \text{Domain}(S_i) = \{0,1, \cdots, m \} \times \{ 0,1,\cdots m \}
+  $$
+  where $m = \sum_{i=1}^n \max\left\{ \text{Domain}(X_i) \right\}$. A simple modification to restrict our domain a bit further is to make $m$ depend on $i$ such that $m_i = \sum_{j=1}^{i} \max\left\{ \text{Domain}(X_j) \right\}$ and $m_1 = 0$. In that case, or domain is given by:
+  $$
+    \text{Domain}(S_i) = \{0,1,\cdots, m_{i-1} \} \times \{0, 1, \cdots m_i \}
+  $$
+  If we care to, we can restrict the domain even further, to the below:
+  \begin{align*}
+   \text{Domain}(S_1) &= \{0 \} \times \{\text{Domain}(X_1) \} \\
+   \text{Domain}(S_i) &=  \{ (s_1,s_2) \mid (\_, s_1) \in \text{Domain}(S_{i-1}), s_2 \in \{ s_1 + v \mid v \in \text{Domain}(X_i) \} \}
+  \end{align*}
+  Regardless of which domain we pick, we now describe the factors that we must introduce.
+  \begin{itemize}
+    \item Initializations: $\mathbbm{1}[S_1[1] = 0]$. This enforces that we start our sum at $0$.
+    \item Processing: $\forall i, \mathbbm{1}[S_i[2] = S_i[1] + X_i]$. This enforces that we are computing the sum.
+    \item Final outputs: $\mathbbm{1}[S_n[2] \leq k]$. This is enforcing our initial constraint from the problem that the sum must be less than our equal to $k$.
+    \item Consistency: $\forall i, \mathbbm{1}[B_{i}[1] = B_{i-1}[2]]$. This enforces that our computed sums are transferred correctly between tuples.
+  \end{itemize}
+  The above constraints, along with a concrete example, can the nicely summarized in Figure \ref{fig:n-ary}. It is clear that the above scheme will work, assigning only valid values to $X_i$.
+  \begin{figure}[!h]
+    \centering
+    \includegraphics[scale=0.2]{n-ary.jpg}
+    \caption{Reducing $n-ary$ constraint to binary and unary constraints.}
+    \label{fig:n-ary}
+  \end{figure}
+
+  \item In ``submission.py''.
+\end{enumerate}
+
 \end{document}
