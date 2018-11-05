@@ -104,7 +104,7 @@ that all of this is my own work.
   \item In ``submission.py''.
 \end{enumerate}
 
-\section*{Problem 2}
+\section*{Problem 3}
 
 \begin{enumerate}[label=(\alph*)]
 \item In ``submission.py''.
@@ -171,6 +171,15 @@ request CS228 or CS255 or CS263 or CS267 or CS341 or CS357 or CS366 or EE364A
 
 
 \end{verbatim}
+\end{enumerate}
+
+\section*{Problem 4}
+
+\begin{enumerate}[label=(\alph*)]
+  \item First we discuss how the notable patterns can be included as part of the CSP. Let $|p|$ be the length of the notable pattern $p$. Then each $p \in P$ would induce $n - |p| + 1$ constraints, each with a scope size given by $|p|$ consisting of sliding window over the variables of size $|p|$ (ie, $\{X_1, \cdots X_{|p|}\}, \{X_{2},\cdots,X_{|p| + 1} \}, \cdots, \{X_{n-|p|+1},\cdots, X_n \}$). Each constraint would have the same expression, mainly $f_p(x_p) = \gamma^{[p= x_p]}$ (essentially, we just check if the variables match the pattern. If so, we assign weight $\gamma$, if not, we assign weight $1$).
+
+  With the above definition, we now consider the worst-case tree-width. Since we could have $|p| = n$, it's possible to have a problem where we introduce at least one $n$-ary constraint. In this case, no matter which variable we choose to remove, we will introduce a new factor with scope of size $n - 1$. Anoter way to look at this is that if we have a pattern of length $n$, then our variables are all neighbors. As such, the worst case treewidth is $n-1$.
+  \item TODO
 \end{enumerate}
 
 \end{document}
