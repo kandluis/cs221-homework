@@ -46,7 +46,13 @@ class ExactInference(object):
 
     def observe(self, agentX, agentY, observedDist):
         # BEGIN_YOUR_CODE (our solution is 6 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        for row in range(self.belief.getNumRows()):
+            for col in range(self.belief.getNumCols()):
+                mu = math.sqrt(sum([ (c1 - c2)**2
+                    for (c1, c2) in zip([agentX, agentY], [util.colToX(col), util.rowToY(row)]) ]))
+                self.belief.setProb(row, col,
+                    self.belief.getProb(row, col) * util.pdf(mu, Const.SONAR_STD, observedDist))
+        self.belief.normalize()
         # END_YOUR_CODE
 
     ##################################################################################
@@ -70,7 +76,13 @@ class ExactInference(object):
     def elapseTime(self):
         if self.skipElapse: return ### ONLY FOR THE GRADER TO USE IN Problem 2
         # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        marginal = collections.defaultdict(int)
+        for (oldTile, newTile), transProb in self.transProb.iteritems():
+            marginal[newTile] += self.belief.getProb(*oldTile) * transProb
+        for row in range(self.belief.getNumRows()):
+            for col in range(self.belief.getNumCols()):
+                self.belief.setProb(row, col, marginal[(row, col)])
+        self.belief.normalize()
         # END_YOUR_CODE
 
     # Function: Get Belief
@@ -165,7 +177,15 @@ class ParticleFilter(object):
     ##################################################################################
     def observe(self, agentX, agentY, observedDist):
         # BEGIN_YOUR_CODE (our solution is 22 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        # Move the particles based on their transition probabilities.
+        for (row, col) in self.particles:
+            mu = math.sqrt(sum([ (c1 - c2)**2
+                    for (c1, c2) in zip([agentX, agentY], [util.colToX(col), util.rowToY(row)]) ]))
+            self.particles[(row, col)] *= util.pdf(mu, Const.SONAR_STD, observedDist)
+        resampledParticles = collections.defaultdict(int)
+        for _ in range(self.NUM_PARTICLES):
+            resampledParticles[util.weightedRandomChoice(self.particles)] += 1
+        self.particles = resampledParticles
         # END_YOUR_CODE
 
         self.updateBelief()
@@ -195,7 +215,11 @@ class ParticleFilter(object):
     ##################################################################################
     def elapseTime(self):
         # BEGIN_YOUR_CODE (our solution is 6 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        newParticles = collections.defaultdict(int)
+        for particle, count in self.particles.iteritems():
+            for _ in range(count):
+                newParticles[util.weightedRandomChoice(self.transProbDict[particle])] += 1
+        self.particles = newParticles
         # END_YOUR_CODE
 
     # Function: Get Belief

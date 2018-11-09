@@ -1,0 +1,52 @@
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{bbm}
+\usepackage{verbatim}
+
+\begin{document}
+
+\begin{center}
+{\Large CS221 Fall 2018 Homework 7}
+
+\begin{tabular}{rl}
+SUNet ID: & 05794739 \\
+Name: & Luis Perez \\
+Collaborators: &
+\end{tabular}
+\end{center}
+
+By turning in this assignment, I agree by the Stanford honor code and declare
+that all of this is my own work.
+
+\section*{Problem 1}
+
+\begin{enumerate}[label=(\alph*)]
+  \item We compute $\mathbb{P}(C_2 = 1 \mid D_2 = 0)$. We note that by the factor graph, we have the following:
+    \begin{align*}
+      \mathbb{P}(C_2 = c_2 \mid D_2 = 0) &\propto p(D_2 = 0 \mid C_2 = c_2)\sum_{c_1 \in \{0,1 \}} p(C_2 = c_2 \mid C_1 = c_1)p(C_1 = c_1) \\
+      &\propto p(D_2 = 0 \mid C_2 = c_2)\sum_{c_1 \in \{0,1 \}} p(C_2 = c_2 \mid C_1 = c_1) \tag{$p(C_1 = c_1) = 0.5$, which we can drop since it's just a proportionality constant} \\
+      &\propto p(D_2 = 0 \mid C_2 = c_2) \tag{$\forall c_2, \sum_{c_1} p(c_2 \mid c_1)=1$ is a valid probability distribution} \\
+      &\propto p(D_2 = 0 \mid C_2 = c_2)
+    \end{align*}
+    Note that $p(d_2 \mid c_2)$ is a valid probability distribution, so the proportionality constant is $1$. Then we have:
+    \begin{align*}
+      \mathbb{P}(C_2 = 0 \mid D_2 = 0) = p(D_2 = 0 \mid C_2 = 0) = \eta \\
+      \mathbb{P}(C_2 = 1 \mid D_2 = 0) = p(D_2 = 0 \mid C_2 = 1) = 1 - \eta
+    \end{align*}
+  \item We compute $\mathbb{P}(C_2 = 1 \mid D_2 = 0, D_3 = 1)$. We note that by the factor graph, we have the following:
+   \begin{align*}
+    \mathbb{P}(C_2 = c_2 \mid D_2 = 0, D_3 = 1) &\propto \mathbb{P}(D_2 = 0 \mid D_3 = 1, C_2 = c_2)\mathbb{P}(D_3 = 1 \mid C_2 = c_2)\mathbb{P}(C_2 = c_2) \tag{Bayes' Rule} \\
+    &\propto p(D_2 = 0 \mid C_2 = c_2)\mathbb{P}(D_3 = 1 \mid C_2 = c_2)\mathbb{P}(C_2 = c_2) \tag{$D_2 \perp D_3 \mid C_2$} \\
+    &\propto p(D_2 = 0 \mid C_2 = c_2)\sum_{c_3 \in \{0,1\}} p(D_3 = 1 \mid C_3 = c_3) \\
+    &\sum_{c_2' \in \{0,1\}} p(C_3 = c_3 \mid C_2' = c_2')\sum_{c_1' \in \{0,1\}} p(C_2' = c_2' \mid C_1' = c_1')p(c_1') \\
+    &\sum_{c_1 \in \{0,1\}} p(C_2 = c_2 \mid C_1 = c_1)p(c_1) \\
+    &= 
+   \end{align*}
+\end{enumerate}
+\end{document}
