@@ -36,17 +36,39 @@ that all of this is my own work.
     \end{align*}
     Note that $p(d_2 \mid c_2)$ is a valid probability distribution, so the proportionality constant is $1$. Then we have:
     \begin{align*}
-      \mathbb{P}(C_2 = 0 \mid D_2 = 0) = p(D_2 = 0 \mid C_2 = 0) = \eta \\
-      \mathbb{P}(C_2 = 1 \mid D_2 = 0) = p(D_2 = 0 \mid C_2 = 1) = 1 - \eta
+      \mathbb{P}(C_2 = 0 \mid D_2 = 0) = p(D_2 = 0 \mid C_2 = 0) = 1- \eta \\
+      \mathbb{P}(C_2 = 1 \mid D_2 = 0) = p(D_2 = 0 \mid C_2 = 1) =  \eta
     \end{align*}
   \item We compute $\mathbb{P}(C_2 = 1 \mid D_2 = 0, D_3 = 1)$. We note that by the factor graph, we have the following:
    \begin{align*}
-    \mathbb{P}(C_2 = c_2 \mid D_2 = 0, D_3 = 1) &\propto \mathbb{P}(D_2 = 0 \mid D_3 = 1, C_2 = c_2)\mathbb{P}(D_3 = 1 \mid C_2 = c_2)\mathbb{P}(C_2 = c_2) \tag{Bayes' Rule} \\
-    &\propto p(D_2 = 0 \mid C_2 = c_2)\mathbb{P}(D_3 = 1 \mid C_2 = c_2)\mathbb{P}(C_2 = c_2) \tag{$D_2 \perp D_3 \mid C_2$} \\
-    &\propto p(D_2 = 0 \mid C_2 = c_2)\sum_{c_3 \in \{0,1\}} p(D_3 = 1 \mid C_3 = c_3) \\
-    &\sum_{c_2' \in \{0,1\}} p(C_3 = c_3 \mid C_2' = c_2')\sum_{c_1' \in \{0,1\}} p(C_2' = c_2' \mid C_1' = c_1')p(c_1') \\
-    &\sum_{c_1 \in \{0,1\}} p(C_2 = c_2 \mid C_1 = c_1)p(c_1) \\
-    &= 
-   \end{align*}
+    &\mathbb{P}(C_2 = c_2 \mid D_2 = 0, D_3 = 1)\\ &\propto \mathbb{P}(D_3 = 1 \mid D_2 = 0, C_2 = c_2)p(D_2 = 0 \mid C_2 = c)p(c_2 = c_2) \tag{Bayes' Rule} \\
+    &\propto \mathbb{P}(D_3 = 1 \mid D_2 = 0, C_2 = c_2)p(D_2 = 0 \mid C_2 = c) \tag{$\mathbb{P}(C_2 = c_2) = \frac{1}{2}$} \\
+    &\propto \mathbb{P}(D_3 = 1 \mid C_2 = c_2)p(D_2 = 0 \mid C_2 = c) \tag{$D_3 \perp D_2 \mid C_2$} \\
+    &\propto \left[\sum_{c_3 \in \{0,1\}} p(D_3 = 1 \mid C_3 = c_3, C_2 = c_2)p(C_3 = c_3 \mid C_2 = c_2)\right]p(D_2 = 0 \mid C_2 = c) \tag{LOTP} \\
+    &\propto \left[\sum_{c_3 \in \{0,1\}} p(D_3 = 1 \mid C_3 = c_3)p(C_3 = c_3 \mid C_2 = c_2)\right]p(D_2 = 0 \mid C_2 = c) \tag{$D_3 \perp C_2 \mid C_3$}
+    \end{align*}
+    From the above and given the previous result, we compute directly the requested values. We just plug-in and lookup the corresponding conditional distributions:
+    \begin{align*}
+      \mathbb{P}(C_2 = 0 \mid D_2 = 0, D_3 = 1) &\propto [\eta (1-\epsilon) + (1-\eta)\epsilon](1-\eta) \\
+      \mathbb{P}(C_2 = 1 \mid D_2 = 0, D_3 = 1) &\propto  [\eta\epsilon + (1-\eta)(1-\epsilon)]\eta
+    \end{align*}
+    From the abive and the fact that we must have a valid distributions, we arrive at the following:
+    $$
+      \mathbb{P}(C_2 = 1 \mid D_2 = 0, D_3 = 1) =  \frac{[\eta\epsilon + (1-\eta)(1-\epsilon)]\eta}{[\eta\epsilon + (1-\eta)(1-\epsilon)]\eta + [\eta (1-\epsilon) + (1-\eta)\epsilon](1-\eta)}
+    $$
+  \item We now compute the probabilities requested where $\epsilon = 0.1$ and $\eta = 0.2$.
+  \begin{enumerate}[label=(\roman*)]
+    \item We have:
+    $$
+      \mathbb{P}(C_2 = 1 \mid D_2 = 0) = \eta = 0.2
+    $$
+    and 
+    $$
+      \mathbb{P}(C_2 = 1 \mid D_2 = 0, D_3 =1) = \frac{[0.2(0.1) + (0.8)(0.9)]0.2}{[0.2(0.1) + (0.8)(0.9)]0.2 + [0.2 (0.9) + (0.8)(0.1)](0.8)} = 0.4157
+    $$
+    \item By adding the second sensor reading, the probability that the car was at $C_1 = 1$ increased. This change makes sense, since the second sensor reading $D_3 = 1$ sees that car at position $1$. Given that our sensor error rate is low ($\eta = 0.2$), it's likely that the car is at position $1$, according to this second reading. Furthermore, since cars change positions with low probability $\epsilon = 0.2$, the probability that $C_2 = 1$ must increase. However, note that the probability is still less than $0.5$. This is because our original sensor reading of $D_2 = 0$ has less room for error, so it's still more likely that the positions at $t = 2$ was $0$ and that the car simply moved. This is because of our relatively low $\eta$ value.
+
+    \item We would have to set $\epsilon = 0.5$. This is because with $\epsilon = 0.5$, at each time-step, the car has equal probabiilty of staying at the current position or alternating to a new one. As such, the sensor readings then become indendent. An additional reading of $D_3 = 1$ gives no further information about the position at $t = 2$, since the car was equally likely to have stayed or swapped positions.
+  \end{enumerate}
 \end{enumerate}
 \end{document}
