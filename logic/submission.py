@@ -118,11 +118,10 @@ def liar():
     formulas.append(Equiv(TellTruth(susan), CrashedServer(nicole)))
     formulas.append(Equiv(TellTruth(mark), CrashedServer(susan)))
     formulas.append(Equiv(TellTruth(nicole), Not(TellTruth(susan))))
-    # There exists a person such that they tell the truth and for all others, if they tell the truth
-    # it implies that they are this person.
-    formulas.append(Exists('$x', And(TellTruth('$x'), Forall('$y', Implies(TellTruth('$y'), Equals('$y', '$x'))))))
-    # Same as above with with CrashedServer.
-    formulas.append(Exists('$x', And(CrashedServer('$x'), Forall('$y', Implies(CrashedServer('$y'), Equals('$y', '$x'))))))
+    # There exists a person such that they P and for all others, if they P it implies that they are this person.
+    def ExactlyOne(P): return Exists('$x', And(P('$x'), Forall('$y', Implies(P('$y'), Equals('$y', '$x')))))
+    formulas.append(ExactlyOne(TellTruth))
+    formulas.append(ExactlyOne(CrashedServer))
     # END_YOUR_CODE
     query = CrashedServer('$x')
     return (formulas, query)
@@ -154,7 +153,16 @@ def ints():
     formulas = []
     query = None
     # BEGIN_YOUR_CODE (our solution is 30 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    formulas.append(Forall('$x', Exists('$y', AndList([
+        Not(Equals('$x', '$y')), Successor('$x', '$y'),
+        Forall('$z', Implies(Successor('$x', '$z'), Equals('$z', '$y')))
+    ]))))
+    formulas.append(Forall('$x', Xor(Even('$x'), Odd('$x'))))
+    formulas.append(Forall('$x', Forall('$y', Implies(And(Successor('$x', '$y'), Even('$x')), Odd('$y')))))
+    formulas.append(Forall('$x', Forall('$y', Implies(And(Successor('$x', '$y'), Odd('$x')), Even('$y')))))
+    formulas.append(Forall('$x', Forall('$y', Implies(Successor('$x', '$y'), Larger('$y', '$x')))))
+    formulas.append(Forall('$x', Forall('$y', Forall('$z',
+        Implies(And(Larger('$x', '$y'), Larger('$y', '$z')), Larger('$x', '$z'))))))
     # END_YOUR_CODE
     query = Forall('$x', Exists('$y', And(Even('$y'), Larger('$y', '$x'))))
     return (formulas, query)
