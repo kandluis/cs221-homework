@@ -50,15 +50,29 @@ that all of this is my own work.
 \section*{Problem 4}
 
 \begin{enumerate}[label=(\alph*)]
-  \item TODO
-  \item TODO
+  \item We begin with a $\text{KB} = \{A \lor B) \to C, A \}$. We can conver this into conjunctive normal form (following the hint) to arrive at:
+  \begin{align*}
+  \text{KB} &= [\lnot(A \lor B) \lor C] \land A \tag{apply hint} \\
+  &= (\lnot A \lor C) \land A \land (\lnot B \lor C)  \tag{distribute the not} \\
+  &= (\lnot A \lor C) \land A \land C \land (\lnot B \lor C) \tag{application of Modus ponens to $(\lnot A \lor C) \land A$}
+  \end{align*}
+  By Modus ponens, we therefore have the formula $C$. 
+  \item We follow a similar approach to before by first converting the database to CNF.
+  \begin{align*}
+    \text{KB} &= (A \lor B) \land (\lnot B \lor C) \land [\lnot(A \lor C) \lor D] \tag{hint from previous problem} \\
+    &= (A \lor B) \land (\lnot B \lor C) \land (\lnot A \lor D) \land (\lnot C \lor D) \tag{distributing the not} \\
+    &= (A \lor B) \land (\lnot B \lor C) \land (C \lor A) \land (\lnot A \lor D) \land (\lnot C \lor D)  \tag{resolution rule applied to $(A \lor B) \land (\lnot B \lor C)$} \\
+    &= (A \lor B) \land (\lnot B \lor C) \land (C \lor A) \land (\lnot A \lor D) \land (D \lor C) \land (\lnot C \lor D)  \tag{resolution rule applied to $(C \lor A) \land (\lnot A \lor D)$} \\
+    &= (A \lor B) \land (\lnot B \lor C) \land (C \lor A) \land (\lnot A \lor D) \land (D \lor C) \land (\lnot C \lor D) \land D \tag{resolution rule applied to $(D \lor C) \land (\lnot C \lor D)$}
+  \end{align*}
+  We have now derived $D$ in our databse.
 \end{enumerate}
 
 \section*{Problem 5}
 
 \begin{enumerate}[label=(\alph*)]
   \item In ``submission.py''.
-  \item TODO
+  \item We seek to prove by contradiction. Suppose we have a finite, non-empty model (set of assignments $X = \{x_1, \cdots, x_n\}$) which satisfies all of the $7$ contraints. By the newly added constraint, we must have that a number is not larger than itself. Combined with the transitive property of ``larger'', this induces an absolute ordering on our finite, non-empty model. In other words, these two constraints imply that there is an $x_{\text{LARGEST}}$ which has no value which is larger. However, this contradicts the fact that each $x$ has exactly one successor, and that this succesor is larger.
 \end{enumerate}
 
 \section*{Problem 6}
