@@ -57,7 +57,7 @@ def formula2b():
 
     # Note: You do NOT have to enforce that the child is a "person"
     # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-    return Exists('$x', Forall('$y', Equiv(Person('$x'), Not(Child('$x','$y')))))
+    return Exists('$x', And(Person('$x'), Forall('$y', Not(Child('$x','$y')))))
     # END_YOUR_CODE
 
 # Return a formula which defines Daughter in terms of Female and Child.
@@ -184,17 +184,24 @@ def createRule1():
     # Return a GrammarRule for 'every $Noun $Verb some $Noun'
     # Note: universal quantification should be outside existential quantification.
     # BEGIN_YOUR_CODE (our solution is 3 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    return GrammarRule('$Clause', ['every', '$Noun', '$Verb', 'some', '$Noun'],
+        lambda args: Forall('$x', Implies(Atom(args[0].title(), '$x'), Exists('$y',
+            And(Atom(args[2].title(), '$y'), Atom(args[1].title(), '$x', '$y'))))))
     # END_YOUR_CODE
 
 def createRule2():
     # Return a GrammarRule for 'there is some $Noun that every $Noun $Verb'
     # BEGIN_YOUR_CODE (our solution is 3 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    return GrammarRule('$Clause', ['there', 'is', 'some', '$Noun', 'that', 'every', '$Noun', '$Verb'],
+        lambda args: Exists('$x', And(Atom(args[0].title(), '$x'),
+            Forall('$y', Implies(Atom(args[1].title(), '$y'), Atom(args[2].title(), '$y', '$x'))))))
     # END_YOUR_CODE
 
 def createRule3():
     # Return a GrammarRule for 'if a $Noun $Verb a $Noun then the former $Verb the latter'
     # BEGIN_YOUR_CODE (our solution is 4 lines of code, but don't worry if you deviate from this)
-    raise Exception("Not implemented yet")
+    return GrammarRule('$Clause', ['if', 'a', '$Noun', '$Verb', 'a', '$Noun', 'then', 'the', 'former', '$Verb', 'the', 'latter'],
+        lambda args: Forall('$x', Forall('$y', Implies(AndList(
+            [Atom(args[0].title(), '$x'), Atom(args[2].title(), '$y'), Atom(args[1].title(), '$x', '$y')]),
+            Atom(args[3].title(), '$x', '$y')))))
     # END_YOUR_CODE
